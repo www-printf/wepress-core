@@ -1,26 +1,60 @@
-name: test
+name: test & lint
 on:
   pull_request:
     branches: ["main"]
+    paths:
+      - '**.go'
+      - 'go.mod'
+      - 'go.sum'
+      - '.golangci.yml'
+      - '.github/workflows/test.yml'
+
+# Cancel any in-progress job or run
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for better test coverage reporting
 
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.23"
+          go-version: '1.21'  # Updated to latest stable version
+          check-latest: true
           cache: true
+          cache-dependency-path: go.sum
+
+      - name: Go Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
       - name: Install dependencies
-        run: go mod download
+        run: |
+          go mod download
+          go mod verify
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
           version: latest
+          args: --timeout=5m
+          only-new-issues: true
+          skip-cache: false
+          install-mode: binary
 
-      - name: Run tests
-        run: go test -v ./...
+      - name: Run tests with coverage
+        run: |
+          go test -v -race ./...
