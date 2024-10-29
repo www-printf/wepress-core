@@ -18,7 +18,7 @@ func (m *DemoModule) RegisterRepositories(container *dig.Container) error {
 }
 
 func (m *DemoModule) RegisterUseCases(container *dig.Container) error {
-	container.Provide(usecases.NewDemoUsecase)
+	_ = container.Provide(usecases.NewDemoUsecase)
 	return nil
 }
 
