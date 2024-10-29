@@ -1,0 +1,58 @@
+name: Auto Tagger
+on:
+  pull_request:
+    types: [closed]
+jobs:
+  tag-commit:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest version tag
+        id: get-latest-tag
+        run: |
+          git fetch --tags
+          latest_tag=$(git tag -l 'v*' --sort=-v:refname | head -n 1)
+          if [ -z "$latest_tag" ]; then
+            echo "version=v0.0.0" >> $GITHUB_OUTPUT
+          else
+            echo "version=$latest_tag" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate new version
+        id: generate-version
+        run: |
+          current_version=${{ steps.get-latest-tag.outputs.version }}
+          # Remove 'v' prefix
+          version_number=${current_version#v}
+          # Split into array
+          IFS='.' read -ra VERSION_PARTS <<< "$version_number"
+
+          # Increment patch version
+          ((VERSION_PARTS[2]++))
+
+          # Create new version
+          new_version="v${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.${VERSION_PARTS[2]}"
+          echo "new_version=$new_version" >> $GITHUB_OUTPUT
+
+      - name: Create and push tag
+        run: |
+          new_tag=${{ steps.generate-version.outputs.new_version }}
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+          # Get commit message
+          commit_msg=$(git log -1 --pretty=%B)
+
+          # Create annotated tag with commit message
+          git tag -a ${new_tag} -m "Release ${new_tag}
+
+          Commit message: ${commit_msg}"
+          git push origin ${new_tag}
