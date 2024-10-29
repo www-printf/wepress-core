@@ -1,7 +1,6 @@
 name: release
 
 on:
-  pull_request:
   push:
     tags:
       - "*"
@@ -29,4 +28,3 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  
