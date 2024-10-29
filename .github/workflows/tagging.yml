@@ -2,6 +2,8 @@ name: Auto Tagger
 on:
   pull_request:
     types: [closed]
+    branches:
+      - main
 jobs:
   tag-commit:
     runs-on: ubuntu-latest
@@ -25,25 +27,16 @@ jobs:
             echo "version=$latest_tag" >> $GITHUB_OUTPUT
           fi
 
-      - name: Generate new version
-        id: generate-version
-        run: |
-          current_version=${{ steps.get-latest-tag.outputs.version }}
-          # Remove 'v' prefix
-          version_number=${current_version#v}
-          # Split into array
-          IFS='.' read -ra VERSION_PARTS <<< "$version_number"
-
-          # Increment patch version
-          ((VERSION_PARTS[2]++))
-
-          # Create new version
-          new_version="v${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.${VERSION_PARTS[2]}"
-          echo "new_version=$new_version" >> $GITHUB_OUTPUT
+      - name: Get Next Version
+        id: semver
+        uses: ietf-tools/semver-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
 
       - name: Create and push tag
         run: |
-          new_tag=${{ steps.generate-version.outputs.new_version }}
+          new_tag=${{ steps.semver.outputs.next }}
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
