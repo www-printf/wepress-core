@@ -14,7 +14,7 @@ run-api:
 	go run ./cmd/api/
 
 build-api:
-	go build -v -o ./bin/ ./cmd/api
+	docker build --target=exporter -t export-wepress-core --output=./dist .
 
 test:
 	go test -v -cover -benchmem ./...

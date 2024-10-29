@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"time"
@@ -10,7 +12,9 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/rs/zerolog/log"
 	echoSwagger "github.com/swaggo/echo-swagger"
+	"github.com/www-printf/wepress-core/cmd/api/di"
 	"github.com/www-printf/wepress-core/config"
+	_ "github.com/www-printf/wepress-core/docs"
 )
 
 // @title WePress API
@@ -45,15 +49,27 @@ func main() {
 	e.HideBanner = true
 	e.Validator = cfg.AppConfig.Validator
 
+	container := di.BuildDIContainer(&cfg.AppConfig)
+
 	api := e.Group("/api/v1")
 	api.GET("/ping", func(c echo.Context) error {
 		return c.String(200, "pong")
 	})
 
-	api.GET("/docs/*", echoSwagger.WrapHandler)
+	err = di.RegisterModules(api, container)
+	if err != nil {
+		log.Fatal().Msgf("Error when registering modules: %v", err)
+	}
+
+	e.GET("/docs", func(c echo.Context) error {
+		return c.Redirect(http.StatusPermanentRedirect, "/docs/index.html")
+	})
+	e.GET("/docs/*", echoSwagger.WrapHandler)
 
 	go func() {
-		if err := e.Start(cfg.AppConfig.Port); err != nil {
+		if err := e.Start(
+			fmt.Sprintf("%s:%s", cfg.AppConfig.Host, cfg.AppConfig.Port),
+		); err != nil {
 			log.Fatal().Msgf("Error when starting server: %v", err)
 		}
 	}()
