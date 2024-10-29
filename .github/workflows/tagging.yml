@@ -4,7 +4,6 @@ on:
     types: [closed]
 jobs:
   tag-commit:
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: write
