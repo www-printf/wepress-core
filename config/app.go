@@ -2,31 +2,31 @@ package config
 
 import (
 	"os"
+	"strings"
 
+	"github.com/caarlos0/env/v11"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	AppConfig AppConfig `yaml:"app"`
+	AppConfig AppConfig
 }
 
 type AppConfig struct {
-	Environment string `yaml:"environment"`
-	Port        string `yaml:"port"`
-	BaseURL     string `yaml:"base_url"`
-	DatabaseDSN string `yaml:"database_dsn"`
-	// RedisURL    string `yaml:"redis_url"`
+	Environment string `env:"ENV"`
+	Host        string `env:"APP_HOST"`
+	Port        string `env:"APP_PORT"`
+	BaseURL     string `env:"APP_BASE_URL"`
+	DatabaseDSN string `env:"DATABASE_DSN"`
+	// RedisURL    string `env:"REDIS_URI"`
 
-	Validator  echo.Validator        `yaml:"-"`
-	CORSConfig middleware.CORSConfig `yaml:"-"`
+	AutoMigrate bool   `env:"AUTO_MIGRATE"`
+	LogLevel    string `env:"LOG_LEVEL"`
 
-	AutoMigrate bool   `yaml:"auto_migrate"`
-	LogLevel    string `yaml:"log_level"`
-
-	AuthProvider string `yaml:"auth_provider"`
+	Validator  echo.Validator
+	CORSConfig middleware.CORSConfig
 }
 
 type AppValidator struct {
@@ -38,12 +38,24 @@ func (cv *AppValidator) Validate(i interface{}) error {
 }
 
 func InitConfig() (*Config, error) {
-	yamlData, err := os.ReadFile("config/config.yaml")
-	if err != nil {
+	var cfg Config
+	if err := env.Parse(&cfg); err != nil {
 		return nil, err
 	}
+	allowOrigins := os.Getenv("CORS_ALLOW_ORIGINS")
+	if allowOrigins == "" {
+		allowOrigins = "*"
+	}
+	var AllowOrigins []string
+	if strings.Contains(allowOrigins, ",") {
+		AllowOrigins = strings.Split(allowOrigins, ",")
+	} else {
+		AllowOrigins = []string{allowOrigins}
+	}
 
-	var config Config
-	yaml.Unmarshal(yamlData, &config)
-	return &config, nil
+	cfg.AppConfig.CORSConfig = middleware.CORSConfig{
+		AllowOrigins: AllowOrigins,
+	}
+
+	return &cfg, nil
 }
