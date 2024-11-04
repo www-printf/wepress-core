@@ -1,5 +1,12 @@
 basePath: /api/v1
 definitions:
+  domains.AuthResponse:
+    properties:
+      token:
+        type: string
+    required:
+    - token
+    type: object
   domains.Demo:
     properties:
       message:
@@ -23,6 +30,28 @@ info:
   title: WePress API
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Post Login
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/domains.AuthResponse'
+              type: object
+      security:
+      - Bearer: []
+      summary: Post Login
+      tags:
+      - auth
   /demo:
     get:
       consumes:

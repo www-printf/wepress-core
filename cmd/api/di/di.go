@@ -3,12 +3,15 @@ package di
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog/log"
+
+	"go.uber.org/dig"
+
 	"github.com/www-printf/wepress-core/config"
 	"github.com/www-printf/wepress-core/infrastructure/datastore"
 	"github.com/www-printf/wepress-core/modules"
+	"github.com/www-printf/wepress-core/modules/auth"
 	"github.com/www-printf/wepress-core/modules/demo"
 	"github.com/www-printf/wepress-core/pkg/middlewares"
-	"go.uber.org/dig"
 )
 
 func BuildDIContainer(
@@ -19,6 +22,9 @@ func BuildDIContainer(
 		return conf
 	})
 
+	_ = container.Provide(func() string {
+		return conf.DatabaseDSN
+	})
 	_ = container.Provide(datastore.ProvideDatabase)
 
 	return container
@@ -28,6 +34,7 @@ func RegisterModules(e *echo.Group, container *dig.Container) error {
 	var err error
 	mapModules := map[string]modules.ModuleInstance{
 		"demo": demo.Module,
+		"auth": auth.Module,
 	}
 
 	gRoot := e.Group("/")

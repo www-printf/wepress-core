@@ -16,6 +16,9 @@ run-api:
 build-api:
 	docker build --target=exporter -t export-wepress-core --output=./dist .
 
+watch-api:
+	air -c .air.toml
+
 test:
 	go test -v -cover -benchmem ./...
 
