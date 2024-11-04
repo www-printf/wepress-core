@@ -6,6 +6,7 @@ require (
 	github.com/caarlos0/env/v11 v11.2.2
 	github.com/go-playground/validator/v10 v10.7.0
 	github.com/golang-migrate/migrate/v4 v4.18.1
+	github.com/google/uuid v1.6.0
 	github.com/labstack/echo/v4 v4.6.1
 	github.com/rs/zerolog v1.33.0
 	github.com/swaggo/echo-swagger v1.0.0

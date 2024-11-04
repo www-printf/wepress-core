@@ -28,5 +28,7 @@ func ProvideDatabase(dbDSN string) *gorm.DB {
 	normalDB.SetMaxIdleConns(2)
 	normalDB.SetMaxOpenConns(5)
 
+	log.Info().Msgf("Connected to DB: %v", dbDSN)
+
 	return db
 }

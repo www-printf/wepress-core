@@ -25,3 +25,6 @@ go.work.sum
 .env
 
 dist/
+
+# air config
+.air.toml
