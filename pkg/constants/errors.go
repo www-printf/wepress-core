@@ -8,4 +8,6 @@ var (
 	ErrUnauthorized error = errors.New("unauthorized")
 	ErrForbidden    error = errors.New("forbidden")
 	ErrInternal     error = errors.New("internal")
+	ErrExpired      error = errors.New("token expired")
+	ErrInvalid      error = errors.New("invalid token")
 )

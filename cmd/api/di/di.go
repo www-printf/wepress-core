@@ -11,7 +11,6 @@ import (
 	"github.com/www-printf/wepress-core/modules"
 	"github.com/www-printf/wepress-core/modules/auth"
 	"github.com/www-printf/wepress-core/modules/demo"
-	"github.com/www-printf/wepress-core/pkg/middlewares"
 )
 
 func BuildDIContainer(
@@ -50,12 +49,6 @@ func RegisterModules(e *echo.Group, container *dig.Container) error {
 			log.Error().Msg(err.Error())
 			return err
 		}
-	}
-
-	err = container.Provide(middlewares.NewMiddlewareManager)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return err
 	}
 
 	for _, m := range mapModules {

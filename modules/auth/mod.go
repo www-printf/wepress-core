@@ -10,7 +10,6 @@ import (
 	"github.com/www-printf/wepress-core/modules/auth/repository"
 	"github.com/www-printf/wepress-core/modules/auth/usecases"
 	"github.com/www-printf/wepress-core/pkg/jwt"
-	"github.com/www-printf/wepress-core/pkg/middlewares"
 )
 
 var Module modules.ModuleInstance = &AuthModule{}
@@ -32,8 +31,7 @@ func (m *AuthModule) RegisterHandlers(g *echo.Group, container *dig.Container) e
 	return container.Invoke(func(
 		appConf *config.AppConfig,
 		authUsecase usecases.AuthUsecase,
-		authMiddleware *middlewares.MiddlewareManager,
 	) {
-		handlers.NewAuthHandler(g, authUsecase, authMiddleware)
+		handlers.NewAuthHandler(g, authUsecase, appConf)
 	})
 }
