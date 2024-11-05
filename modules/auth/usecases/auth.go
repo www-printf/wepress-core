@@ -18,6 +18,7 @@ import (
 
 type AuthUsecase interface {
 	UserLogin(ctx context.Context, req *dto.LoginRequestBody) (*dto.AuthResponseBody, error)
+	ValidateToken(ctx context.Context, token string) (jwtLib.MapClaims, error)
 }
 
 type authUsecase struct {
@@ -55,14 +56,14 @@ func (u *authUsecase) UserLogin(
 		}
 	}
 
-	privKey, err := base64.StdEncoding.DecodeString(user.PrivKey)
+	privKeyBytes, err := base64.StdEncoding.DecodeString(user.PrivKey)
 	if err != nil {
 		return nil, constants.ErrInternal
 	}
 	claims := jwtLib.MapClaims{
 		"uid": user.ID.String(),
 	}
-	token, err := u.tokenManger.Generate(claims, ed25519.PrivateKey(privKey))
+	token, err := u.tokenManger.Generate(claims, ed25519.PrivateKey(privKeyBytes))
 	if err != nil {
 		return nil, constants.ErrInternal
 	}
@@ -71,4 +72,29 @@ func (u *authUsecase) UserLogin(
 		Token: token,
 		Type:  "Bearer",
 	}, nil
+}
+
+func (u *authUsecase) ValidateToken(
+	ctx context.Context, token string) (jwtLib.MapClaims, error) {
+	rawClaims, err := u.tokenManger.GetClaims(token)
+	if err != nil {
+		return nil, err
+	}
+
+	uid := rawClaims["uid"].(string)
+	if uid == "" {
+		return nil, constants.ErrUnauthorized
+	}
+
+	user, err := u.authRepo.GetUserByID(ctx, uid)
+	if err != nil {
+		return nil, constants.ErrNotFound
+	}
+
+	pubKeyBytes, err := base64.StdEncoding.DecodeString(user.PubKey)
+	if err != nil {
+		return nil, constants.ErrInternal
+	}
+
+	return u.tokenManger.Validate(token, ed25519.PublicKey(pubKeyBytes))
 }

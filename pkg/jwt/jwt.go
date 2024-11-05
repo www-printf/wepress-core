@@ -12,7 +12,8 @@ import (
 
 type TokenManager interface {
 	Generate(claims jwt.MapClaims, privateKey ed25519.PrivateKey) (string, error)
-	Validate(token string, publicKey ed25519.PublicKey) (jwt.Claims, error)
+	Validate(token string, publicKey ed25519.PublicKey) (jwt.MapClaims, error)
+	GetClaims(token string) (jwt.MapClaims, error)
 }
 
 type tokenManager struct {
@@ -28,8 +29,8 @@ func NewTokenManager(appConf *config.AppConfig) TokenManager {
 }
 
 func (j *tokenManager) Generate(claims jwt.MapClaims, privateKey ed25519.PrivateKey) (string, error) {
-	claims["exp"] = time.Now().Add(j.expiredTime).Format("2006-01-02 15:04:05")
-	claims["iat"] = time.Now().Format("2006-01-02 15:04:05")
+	claims["exp"] = time.Now().Add(j.expiredTime).Unix()
+	claims["iat"] = time.Now().Unix()
 	claims["iss"] = j.issuer
 
 	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
@@ -42,7 +43,7 @@ func (j *tokenManager) Generate(claims jwt.MapClaims, privateKey ed25519.Private
 	return signedToken, nil
 }
 
-func (j *tokenManager) Validate(token string, publicKey ed25519.PublicKey) (jwt.Claims, error) {
+func (j *tokenManager) Validate(token string, publicKey ed25519.PublicKey) (jwt.MapClaims, error) {
 	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		return publicKey, nil
 	})
@@ -50,5 +51,27 @@ func (j *tokenManager) Validate(token string, publicKey ed25519.PublicKey) (jwt.
 		log.Error().Err(err).Msg("failed to validate token")
 		return nil, constants.ErrUnauthorized
 	}
-	return parsedToken.Claims, nil
+	exp, err := parsedToken.Claims.GetExpirationTime()
+	if err != nil {
+		log.Error().Err(err).Msg("failed to get expiration time")
+		return nil, constants.ErrUnauthorized
+	}
+	if time.Now().After(exp.Time) {
+		log.Error().Msg("token is expired")
+		return nil, constants.ErrExpired
+	}
+
+	uid := parsedToken.Claims.(jwt.MapClaims)["uid"]
+	if uid == nil {
+		log.Error().Msg("uid is missing in token")
+		return nil, constants.ErrInvalid
+	}
+
+	return parsedToken.Claims.(jwt.MapClaims), nil
+}
+
+func (j *tokenManager) GetClaims(token string) (jwt.MapClaims, error) {
+	rawToken, _, _ := new(jwt.Parser).ParseUnverified(token, jwt.MapClaims{})
+	rawClaims := rawToken.Claims.(jwt.MapClaims)
+	return rawClaims, nil
 }

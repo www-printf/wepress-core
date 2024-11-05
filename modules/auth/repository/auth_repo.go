@@ -10,6 +10,7 @@ import (
 
 type AuthRepository interface {
 	GetUserByEmail(ctx context.Context, email string) (*domains.User, error)
+	GetUserByID(ctx context.Context, id string) (*domains.User, error)
 	InsertKeyPair(ctx context.Context, user *domains.User, keyPair map[string]string) error
 }
 
@@ -24,6 +25,14 @@ func NewAuthRepository(db *gorm.DB) AuthRepository {
 func (r *authRepository) GetUserByEmail(ctx context.Context, email string) (*domains.User, error) {
 	var user domains.User
 	if err := r.db.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *authRepository) GetUserByID(ctx context.Context, id string) (*domains.User, error) {
+	var user domains.User
+	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
