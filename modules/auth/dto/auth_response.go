@@ -1,6 +1,6 @@
 package dto
 
-type AuthResponse struct {
+type AuthResponseBody struct {
 	Token string `json:"token" validate:"require,jwt"`
 	Type  string `json:"type"`
 }

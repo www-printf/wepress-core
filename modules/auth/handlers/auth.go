@@ -35,7 +35,8 @@ func NewAuthHandler(g *echo.Group, authUC usecases.AuthUsecase, authMiddleware *
 // @Accept json
 // @Produce json
 // @Param request body dto.LoginRequestBody true "Login Request Body"
-// @Success      200  {object}  wrapper.SuccessResponse{data=dto.AuthResponse}
+// @Success      200  {object}  wrapper.SuccessResponse{data=dto.AuthResponseBody}
+// @Header 200 {string} Set-Cookie "auth=token; Path=/; Secure"
 // @Security     Bearer
 // @Router       /auth/login [post]
 func (h *AuthHandler) Login(c echo.Context) wrapper.Response {
@@ -49,13 +50,50 @@ func (h *AuthHandler) Login(c echo.Context) wrapper.Response {
 		return wrapper.Response{Error: err, Status: http.StatusUnauthorized}
 	}
 
+	cookie := &http.Cookie{
+		Name:   "auth",
+		Value:  auth.Token,
+		Path:   "/",
+		Secure: true,
+	}
+	c.SetCookie(cookie)
+
 	return wrapper.Response{Data: auth, Status: http.StatusOK}
 }
 
+// @Summary Verify Token
+// @Description Verify Token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body dto.TokkenVerifyRequestBody true "Token to verify"
+// @Success      200  {object}  wrapper.SuccessResponse{data=nil}
+// @Security     Bearer
+// @Router       /auth/verify [get]
 func (h *AuthHandler) Verify(c echo.Context) wrapper.Response {
 	return wrapper.Response{Data: nil, Status: http.StatusOK}
 }
 
+// @Summary Forgot Password
+// @Description Request To Reset Password
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body dto.ForgotPasswordRequestBody true "Forgot Password Request Body"
+// @Success      200  {object}  wrapper.SuccessResponse{data=nil}
+// @Router       /auth/forgot-password [post]
 func (h *AuthHandler) ForgotPassword(c echo.Context) wrapper.Response {
+	return wrapper.Response{Data: nil, Status: http.StatusOK}
+}
+
+// @Summary Get User Profile
+// @Description Get User Profile
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Success      200  {object}  wrapper.SuccessResponse{data=dto.UserResponseBody}
+// @Security     Bearer
+// @Router       /auth/me [get]
+func (h *AuthHandler) Profile(c echo.Context) wrapper.Response {
 	return wrapper.Response{Data: nil, Status: http.StatusOK}
 }

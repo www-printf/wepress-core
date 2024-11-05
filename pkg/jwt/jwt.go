@@ -28,8 +28,8 @@ func NewTokenManager(appConf *config.AppConfig) TokenManager {
 }
 
 func (j *tokenManager) Generate(claims jwt.MapClaims, privateKey ed25519.PrivateKey) (string, error) {
-	claims["exp"] = time.Now().Add(j.expiredTime).Unix()
-	claims["iat"] = time.Now().Unix()
+	claims["exp"] = time.Now().Add(j.expiredTime).Format("2006-01-02 15:04:05")
+	claims["iat"] = time.Now().Format("2006-01-02 15:04:05")
 	claims["iss"] = j.issuer
 
 	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
