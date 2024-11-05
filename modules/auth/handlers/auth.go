@@ -11,12 +11,12 @@ import (
 )
 
 type AuthHandlerImpl struct {
-	AuthUC usecases.AuthUsecase
+	authUC usecases.AuthUsecase
 }
 
 func NewAuthHandler(g *echo.Group, authUC usecases.AuthUsecase) {
 	h := &AuthHandlerImpl{
-		AuthUC: authUC,
+		authUC: authUC,
 	}
 
 	api := g.Group("auth")
@@ -30,14 +30,21 @@ func NewAuthHandler(g *echo.Group, authUC usecases.AuthUsecase) {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Success      200  {object}  wrapper.SuccessResponse{data=domains.AuthResponse}
+// @Param request body dto.LoginRequestBody true "Login Request Body"
+// @Success      200  {object}  wrapper.SuccessResponse{data=dto.AuthResponse}
 // @Security     Bearer
 // @Router       /auth/login [post]
 func (h *AuthHandlerImpl) Login(c echo.Context) wrapper.Response {
-	auth := dto.AuthResponse{
-		Token: "token",
-		Type:  "Bearer",
+	req := &dto.LoginRequestBody{}
+	if err := c.Bind(req); err != nil {
+		return wrapper.Response{Error: err, Status: http.StatusBadRequest}
 	}
+
+	auth, err := h.authUC.UserLogin(c.Request().Context(), req)
+	if err != nil {
+		return wrapper.Response{Error: err, Status: http.StatusUnauthorized}
+	}
+
 	return wrapper.Response{Data: auth, Status: http.StatusOK}
 }
 

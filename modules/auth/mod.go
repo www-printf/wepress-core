@@ -9,6 +9,7 @@ import (
 	"github.com/www-printf/wepress-core/modules/auth/handlers"
 	"github.com/www-printf/wepress-core/modules/auth/repository"
 	"github.com/www-printf/wepress-core/modules/auth/usecases"
+	"github.com/www-printf/wepress-core/pkg/jwt"
 )
 
 var Module modules.ModuleInstance = &AuthModule{}
@@ -16,11 +17,12 @@ var Module modules.ModuleInstance = &AuthModule{}
 type AuthModule struct{}
 
 func (m *AuthModule) RegisterRepositories(container *dig.Container) error {
-	_ = container.Provide(repository.NewUserRepository)
+	_ = container.Provide(repository.NewAuthRepository)
 	return nil
 }
 
 func (m *AuthModule) RegisterUseCases(container *dig.Container) error {
+	_ = container.Provide(jwt.NewJWTManager)
 	_ = container.Provide(usecases.NewAuthUsecase)
 	return nil
 }
