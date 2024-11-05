@@ -13,4 +13,6 @@ type User struct {
 	Password  string    `gorm:"not null"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	PrivKey   string `gorm:"not null;column:privkey"`
+	PubKey    string `gorm:"not null;column:pubkey"`
 }

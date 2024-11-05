@@ -27,6 +27,8 @@ type AppConfig struct {
 
 	Validator  echo.Validator
 	CORSConfig middleware.CORSConfig
+
+	Issuer string `env:"JWT_ISS" envDefault:"wepress"`
 }
 
 type AppValidator struct {

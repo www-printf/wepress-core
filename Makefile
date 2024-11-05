@@ -2,13 +2,17 @@ migration-create:
 	migrate create -ext sql -dir migrations/sql $(name)
 
 migration-up:
-	migrate -path migrations/sql -verbose -database "${DATABASE_URL}" up
+	migrate -path migrations/sql -verbose -database "${DATABASE_URI}" up
 
 migration-down:
-	migrate -path migrations/sql -verbose -database "${DATABASE_URL}" down
+	migrate -path migrations/sql -verbose -database "${DATABASE_URI}" down
 
 run-db:
-	docker compose up postgres
+	docker run --name wepress -e POSTGRES_PASSWORD=password -p 5432:5432 -d postgres:latest
+
+stop-db:
+	docker stop wepress
+	docker rm wepress -v
 
 run-api:
 	go run ./cmd/api/
