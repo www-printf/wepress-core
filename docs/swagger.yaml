@@ -5,12 +5,20 @@ definitions:
       message:
         type: string
     type: object
-  dto.AuthResponse:
+  dto.AuthResponseBody:
     properties:
       token:
         type: string
       type:
         type: string
+    type: object
+  dto.ForgotPasswordRequestBody:
+    properties:
+      email:
+        example: example@email.com
+        type: string
+    required:
+    - email
     type: object
   dto.LoginRequestBody:
     properties:
@@ -25,6 +33,23 @@ definitions:
     required:
     - email
     - password
+    type: object
+  dto.TokkenVerifyRequestBody:
+    properties:
+      token:
+        example: token
+        type: string
+    required:
+    - token
+    type: object
+  dto.UserResponseBody:
+    properties:
+      email:
+        type: string
+      fullname:
+        type: string
+      id:
+        type: integer
     type: object
   wrapper.SuccessResponse:
     properties:
@@ -44,6 +69,33 @@ info:
   title: WePress API
   version: "1.0"
 paths:
+  /auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Request To Reset Password
+      parameters:
+      - description: Forgot Password Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ForgotPasswordRequestBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
+      summary: Forgot Password
+      tags:
+      - auth
   /auth/login:
     post:
       consumes:
@@ -61,16 +113,71 @@ paths:
       responses:
         "200":
           description: OK
+          headers:
+            Set-Cookie:
+              description: auth=token; Path=/; Secure
+              type: string
           schema:
             allOf:
             - $ref: '#/definitions/wrapper.SuccessResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/dto.AuthResponse'
+                  $ref: '#/definitions/dto.AuthResponseBody'
               type: object
       security:
       - Bearer: []
       summary: Post Login
+      tags:
+      - auth
+  /auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Get User Profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UserResponseBody'
+              type: object
+      security:
+      - Bearer: []
+      summary: Get User Profile
+      tags:
+      - auth
+  /auth/verify:
+    get:
+      consumes:
+      - application/json
+      description: Verify Token
+      parameters:
+      - description: Token to verify
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TokkenVerifyRequestBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
+      security:
+      - Bearer: []
+      summary: Verify Token
       tags:
       - auth
   /demo:

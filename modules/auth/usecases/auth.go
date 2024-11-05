@@ -12,11 +12,12 @@ import (
 	"github.com/www-printf/wepress-core/modules/auth/dto"
 	"github.com/www-printf/wepress-core/modules/auth/repository"
 	"github.com/www-printf/wepress-core/pkg/constants"
+	"github.com/www-printf/wepress-core/pkg/crypto"
 	"github.com/www-printf/wepress-core/pkg/jwt"
 )
 
 type AuthUsecase interface {
-	UserLogin(ctx context.Context, req *dto.LoginRequestBody) (*dto.AuthResponse, error)
+	UserLogin(ctx context.Context, req *dto.LoginRequestBody) (*dto.AuthResponseBody, error)
 }
 
 type authUsecase struct {
@@ -32,7 +33,7 @@ func NewAuthUsecase(authRepo repository.AuthRepository, tokenMng jwt.TokenManage
 }
 
 func (u *authUsecase) UserLogin(
-	ctx context.Context, req *dto.LoginRequestBody) (*dto.AuthResponse, error) {
+	ctx context.Context, req *dto.LoginRequestBody) (*dto.AuthResponseBody, error) {
 	user, err := u.authRepo.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		return nil, constants.ErrNotFound
@@ -44,10 +45,9 @@ func (u *authUsecase) UserLogin(
 	}
 
 	if user.PrivKey == "" {
-		pub, priv, _ := ed25519.GenerateKey(nil)
-		keyPair := map[string]string{
-			"pubkey":  base64.StdEncoding.EncodeToString(pub),
-			"privkey": base64.StdEncoding.EncodeToString(priv),
+		keyPair, err := crypto.GenerateKeyPair()
+		if err != nil {
+			return nil, constants.ErrInternal
 		}
 		err = u.authRepo.InsertKeyPair(ctx, user, keyPair)
 		if err != nil {
@@ -67,7 +67,7 @@ func (u *authUsecase) UserLogin(
 		return nil, constants.ErrInternal
 	}
 
-	return &dto.AuthResponse{
+	return &dto.AuthResponseBody{
 		Token: token,
 		Type:  "Bearer",
 	}, nil
