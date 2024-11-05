@@ -7,4 +7,5 @@ var (
 	ErrDuplicated   error = errors.New("duplicated")
 	ErrUnauthorized error = errors.New("unauthorized")
 	ErrForbidden    error = errors.New("forbidden")
+	ErrInternal     error = errors.New("internal")
 )
