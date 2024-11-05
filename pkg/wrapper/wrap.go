@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	DataField    = "data"
-	TraceIDField = "trace_id"
-	SuccessField = "success"
+	DataField     = "data"
+	TraceIDField  = "trace_id"
+	SuccessField  = "success"
 	CodeField     = "code"
 	MessageField  = "message"
 	TotalField    = "total"
