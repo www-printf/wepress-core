@@ -5,8 +5,8 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
-    privkey VARCHAR NOT NULL,
-    pubkey VARCHAR NOT NULL
+    privkey VARCHAR,
+    pubkey VARCHAR
 );
 
 INSERT INTO users (id, fullname, password, email, privkey, pubkey)
