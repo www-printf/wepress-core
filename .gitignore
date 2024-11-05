@@ -28,3 +28,4 @@ dist/
 
 # air config
 .air.toml
+tmp/

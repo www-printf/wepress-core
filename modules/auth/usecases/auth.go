@@ -3,9 +3,11 @@ package usecases
 import (
 	"context"
 
-	"golang.org/x/crypto/bcrypt"
+	"crypto/ed25519"
+	"encoding/base64"
 
 	jwtLib "github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/www-printf/wepress-core/modules/auth/dto"
 	"github.com/www-printf/wepress-core/modules/auth/repository"
@@ -17,19 +19,19 @@ type AuthUsecase interface {
 	UserLogin(ctx context.Context, req *dto.LoginRequestBody) (*dto.AuthResponse, error)
 }
 
-type AuthUsecaseImpl struct {
-	authRepo   repository.AuthRepository
-	jwtManager jwt.JWTManager
+type authUsecase struct {
+	authRepo    repository.AuthRepository
+	tokenManger jwt.TokenManager
 }
 
-func NewAuthUsecase(authRepo repository.AuthRepository, jwtMng jwt.JWTManager) AuthUsecase {
-	return &AuthUsecaseImpl{
-		authRepo:   authRepo,
-		jwtManager: jwtMng,
+func NewAuthUsecase(authRepo repository.AuthRepository, tokenMng jwt.TokenManager) AuthUsecase {
+	return &authUsecase{
+		authRepo:    authRepo,
+		tokenManger: tokenMng,
 	}
 }
 
-func (u *AuthUsecaseImpl) UserLogin(
+func (u *authUsecase) UserLogin(
 	ctx context.Context, req *dto.LoginRequestBody) (*dto.AuthResponse, error) {
 	user, err := u.authRepo.GetUserByEmail(ctx, req.Email)
 	if err != nil {
@@ -41,10 +43,26 @@ func (u *AuthUsecaseImpl) UserLogin(
 		return nil, constants.ErrUnauthorized
 	}
 
+	if user.PrivKey == "" {
+		pub, priv, _ := ed25519.GenerateKey(nil)
+		keyPair := map[string]string{
+			"pubkey":  base64.StdEncoding.EncodeToString(pub),
+			"privkey": base64.StdEncoding.EncodeToString(priv),
+		}
+		err = u.authRepo.InsertKeyPair(ctx, user, keyPair)
+		if err != nil {
+			return nil, constants.ErrInternal
+		}
+	}
+
+	privKey, err := base64.StdEncoding.DecodeString(user.PrivKey)
+	if err != nil {
+		return nil, constants.ErrInternal
+	}
 	claims := jwtLib.MapClaims{
 		"uid": user.ID.String(),
 	}
-	token, err := u.jwtManager.GenerateToken(claims)
+	token, err := u.tokenManger.Generate(claims, ed25519.PrivateKey(privKey))
 	if err != nil {
 		return nil, constants.ErrInternal
 	}
@@ -53,5 +71,4 @@ func (u *AuthUsecaseImpl) UserLogin(
 		Token: token,
 		Type:  "Bearer",
 	}, nil
-
 }

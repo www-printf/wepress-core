@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"github.com/labstack/echo/v4"
+
 	"github.com/www-printf/wepress-core/config"
 )
 
@@ -17,6 +18,8 @@ func NewMiddlewareManager(appConf *config.AppConfig) *MiddlewareManager {
 
 func (m MiddlewareManager) Auth() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return next
+		return func(c echo.Context) error {
+			return next(c)
+		}
 	}
 }
