@@ -27,11 +27,10 @@ func Auth(authUC usecases.AuthUsecase) echo.MiddlewareFunc {
 				}
 				token = strings.TrimPrefix(authHeader, "Bearer ")
 				if token == "" {
+					log.Error().Msg("token is empty")
 					return constants.ErrUnauthorized
 				}
 			}
-
-			log.Info().Str("token", token).Msg("token")
 
 			claims, err := authUC.ValidateToken(c.Request().Context(), token)
 			if err != nil {

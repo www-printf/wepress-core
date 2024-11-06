@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 
 	jwtLib "github.com/golang-jwt/jwt/v5"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/www-printf/wepress-core/modules/auth/dto"
@@ -37,27 +38,32 @@ func (u *authUsecase) UserLogin(
 	ctx context.Context, req *dto.LoginRequestBody) (*dto.AuthResponseBody, error) {
 	user, err := u.authRepo.GetUserByEmail(ctx, req.Email)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to get user by email")
 		return nil, constants.ErrNotFound
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
 	if err != nil {
+		log.Error().Err(err).Msg("failed to compare password")
 		return nil, constants.ErrUnauthorized
 	}
 
 	if user.PrivKey == "" {
 		keyPair, err := crypto.GenerateKeyPair()
 		if err != nil {
+			log.Error().Err(err).Msg("failed to generate key pair")
 			return nil, constants.ErrInternal
 		}
 		err = u.authRepo.InsertKeyPair(ctx, user, keyPair)
 		if err != nil {
+			log.Error().Err(err).Msg("failed to insert key pair")
 			return nil, constants.ErrInternal
 		}
 	}
 
 	privKeyBytes, err := base64.StdEncoding.DecodeString(user.PrivKey)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to decode private key")
 		return nil, constants.ErrInternal
 	}
 	claims := jwtLib.MapClaims{
@@ -65,6 +71,7 @@ func (u *authUsecase) UserLogin(
 	}
 	token, err := u.tokenManger.Generate(claims, ed25519.PrivateKey(privKeyBytes))
 	if err != nil {
+		log.Error().Err(err).Msg("failed to generate token")
 		return nil, constants.ErrInternal
 	}
 
@@ -76,23 +83,27 @@ func (u *authUsecase) UserLogin(
 
 func (u *authUsecase) ValidateToken(
 	ctx context.Context, token string) (jwtLib.MapClaims, error) {
-	rawClaims, err := u.tokenManger.GetClaims(token)
+	mapClaims, err := u.tokenManger.GetClaims(token)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to get claims")
 		return nil, err
 	}
 
-	uid := rawClaims["uid"].(string)
+	uid := mapClaims["uid"].(string)
 	if uid == "" {
+		log.Error().Msg("uid is missing in token")
 		return nil, constants.ErrUnauthorized
 	}
 
 	user, err := u.authRepo.GetUserByID(ctx, uid)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to get user by id")
 		return nil, constants.ErrNotFound
 	}
 
 	pubKeyBytes, err := base64.StdEncoding.DecodeString(user.PubKey)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to decode public key")
 		return nil, constants.ErrInternal
 	}
 

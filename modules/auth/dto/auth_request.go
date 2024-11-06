@@ -9,6 +9,6 @@ type ForgotPasswordRequestBody struct {
 	Email string `json:"email" validate:"required,email" example:"example@email.com"`
 }
 
-type TokkenVerifyRequestBody struct {
+type VerifyTokenRequestBody struct {
 	Token string `json:"token" validate:"required,jwt" example:"token"`
 }

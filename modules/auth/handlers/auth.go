@@ -23,7 +23,7 @@ func NewAuthHandler(g *echo.Group, authUC usecases.AuthUsecase, appConf *config.
 
 	api := g.Group("auth")
 	api.POST("/login", wrapper.Wrap(h.Login)).Name = "auth:login"
-	api.POST("/verify", wrapper.Wrap(h.Verify)).Name = "auth:verify"
+	api.POST("/verify", wrapper.Wrap(h.Validate)).Name = "auth:verify"
 	api.POST("/forgot-password", wrapper.Wrap(h.ForgotPassword)).Name = "auth:forgot-password"
 
 	api.Use(middlewares.Auth(authUC))
@@ -67,11 +67,21 @@ func (h *AuthHandler) Login(c echo.Context) wrapper.Response {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param request body dto.TokkenVerifyRequestBody true "Token to verify"
+// @Param request body dto.VerifyTokenRequestBody true "Token to verify"
 // @Success      200  {object}  wrapper.SuccessResponse{data=nil}
 // @Security     Bearer
-// @Router       /auth/verify [get]
-func (h *AuthHandler) Verify(c echo.Context) wrapper.Response {
+// @Router       /auth/verify [post]
+func (h *AuthHandler) Validate(c echo.Context) wrapper.Response {
+	token := &dto.VerifyTokenRequestBody{}
+	if err := c.Bind(token); err != nil {
+		return wrapper.Response{Error: err, Status: http.StatusBadRequest}
+	}
+
+	_, err := h.authUC.ValidateToken(c.Request().Context(), token.Token)
+	if err != nil {
+		return wrapper.Response{Error: err, Status: http.StatusUnauthorized}
+	}
+
 	return wrapper.Response{Data: nil, Status: http.StatusOK}
 }
 

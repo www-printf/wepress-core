@@ -34,14 +34,6 @@ definitions:
     - email
     - password
     type: object
-  dto.TokkenVerifyRequestBody:
-    properties:
-      token:
-        example: token
-        type: string
-    required:
-    - token
-    type: object
   dto.UserResponseBody:
     properties:
       email:
@@ -50,6 +42,14 @@ definitions:
         type: string
       id:
         type: integer
+    type: object
+  dto.VerifyTokenRequestBody:
+    properties:
+      token:
+        example: token
+        type: string
+    required:
+    - token
     type: object
   wrapper.SuccessResponse:
     properties:
@@ -152,7 +152,7 @@ paths:
       tags:
       - auth
   /auth/verify:
-    get:
+    post:
       consumes:
       - application/json
       description: Verify Token
@@ -162,7 +162,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.TokkenVerifyRequestBody'
+          $ref: '#/definitions/dto.VerifyTokenRequestBody'
       produces:
       - application/json
       responses:
