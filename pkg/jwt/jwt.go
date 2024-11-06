@@ -71,7 +71,7 @@ func (j *tokenManager) Validate(token string, publicKey ed25519.PublicKey) (jwt.
 }
 
 func (j *tokenManager) GetClaims(token string) (jwt.MapClaims, error) {
-	rawToken, _, _ := new(jwt.Parser).ParseUnverified(token, jwt.MapClaims{})
-	rawClaims := rawToken.Claims.(jwt.MapClaims)
-	return rawClaims, nil
+	parsedToken, _, _ := new(jwt.Parser).ParseUnverified(token, jwt.MapClaims{})
+	mapClaims := parsedToken.Claims.(jwt.MapClaims)
+	return mapClaims, nil
 }

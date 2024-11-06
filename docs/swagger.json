@@ -157,7 +157,7 @@
             }
         },
         "/auth/verify": {
-            "get": {
+            "post": {
                 "security": [
                     {
                         "Bearer": []
@@ -181,7 +181,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.TokkenVerifyRequestBody"
+                            "$ref": "#/definitions/dto.VerifyTokenRequestBody"
                         }
                     }
                 ],
@@ -299,18 +299,6 @@
                 }
             }
         },
-        "dto.TokkenVerifyRequestBody": {
-            "type": "object",
-            "required": [
-                "token"
-            ],
-            "properties": {
-                "token": {
-                    "type": "string",
-                    "example": "token"
-                }
-            }
-        },
         "dto.UserResponseBody": {
             "type": "object",
             "properties": {
@@ -322,6 +310,18 @@
                 },
                 "id": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.VerifyTokenRequestBody": {
+            "type": "object",
+            "required": [
+                "token"
+            ],
+            "properties": {
+                "token": {
+                    "type": "string",
+                    "example": "token"
                 }
             }
         },

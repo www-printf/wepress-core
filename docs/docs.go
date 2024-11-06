@@ -164,7 +164,7 @@ const docTemplate = `{
             }
         },
         "/auth/verify": {
-            "get": {
+            "post": {
                 "security": [
                     {
                         "Bearer": []
@@ -188,7 +188,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.TokkenVerifyRequestBody"
+                            "$ref": "#/definitions/dto.VerifyTokenRequestBody"
                         }
                     }
                 ],
@@ -306,18 +306,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.TokkenVerifyRequestBody": {
-            "type": "object",
-            "required": [
-                "token"
-            ],
-            "properties": {
-                "token": {
-                    "type": "string",
-                    "example": "token"
-                }
-            }
-        },
         "dto.UserResponseBody": {
             "type": "object",
             "properties": {
@@ -329,6 +317,18 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.VerifyTokenRequestBody": {
+            "type": "object",
+            "required": [
+                "token"
+            ],
+            "properties": {
+                "token": {
+                    "type": "string",
+                    "example": "token"
                 }
             }
         },
