@@ -2,7 +2,6 @@ package di
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/rs/zerolog/log"
 
 	"go.uber.org/dig"
 
@@ -40,13 +39,11 @@ func RegisterModules(e *echo.Group, container *dig.Container) error {
 	for _, m := range mapModules {
 		err = m.RegisterRepositories(container)
 		if err != nil {
-			log.Error().Msg(err.Error())
 			return err
 		}
 
 		err = m.RegisterUseCases(container)
 		if err != nil {
-			log.Error().Msg(err.Error())
 			return err
 		}
 	}
@@ -54,7 +51,6 @@ func RegisterModules(e *echo.Group, container *dig.Container) error {
 	for _, m := range mapModules {
 		err = m.RegisterHandlers(gRoot, container)
 		if err != nil {
-			log.Error().Msg(err.Error())
 			return err
 		}
 	}

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/rs/zerolog/log"
 
 	"github.com/www-printf/wepress-core/config"
 	"github.com/www-printf/wepress-core/modules/auth/dto"
@@ -27,7 +28,7 @@ func NewAuthHandler(g *echo.Group, authUC usecases.AuthUsecase, appConf *config.
 	api.POST("/forgot-password", wrapper.Wrap(h.ForgotPassword)).Name = "auth:forgot-password"
 
 	api.Use(middlewares.Auth(authUC))
-	api.GET("/me", wrapper.Wrap(h.Profile)).Name = "get:profile"
+	api.GET("/@me", wrapper.Wrap(h.Profile)).Name = "get:profile"
 }
 
 // @Summary Post Login
@@ -37,7 +38,9 @@ func NewAuthHandler(g *echo.Group, authUC usecases.AuthUsecase, appConf *config.
 // @Produce json
 // @Param request body dto.LoginRequestBody true "Login Request Body"
 // @Success      200  {object}  wrapper.SuccessResponse{data=dto.AuthResponseBody}
-// @Header 200 {string} Set-Cookie "auth=token; Path=/; Secure"
+// @Failure      400  {object}  wrapper.FailResponse
+// @Failure      401  {object}  wrapper.FailResponse
+// @Header 200 {string} Set-Cookie "token=jwt-token; Path=/; Secure"
 // @Security     Bearer
 // @Router       /auth/login [post]
 func (h *AuthHandler) Login(c echo.Context) wrapper.Response {
@@ -48,11 +51,12 @@ func (h *AuthHandler) Login(c echo.Context) wrapper.Response {
 
 	auth, err := h.authUC.UserLogin(c.Request().Context(), req)
 	if err != nil {
-		return wrapper.Response{Error: err, Status: http.StatusUnauthorized}
+		log.Error().Err(err.LogError).Msg("UserLogin failed")
+		return wrapper.Response{Error: err.HTTPError, Status: http.StatusUnauthorized}
 	}
 
 	cookie := &http.Cookie{
-		Name:   "auth",
+		Name:   "token",
 		Value:  auth.Token,
 		Path:   "/",
 		Secure: true,
@@ -79,7 +83,8 @@ func (h *AuthHandler) Validate(c echo.Context) wrapper.Response {
 
 	_, err := h.authUC.ValidateToken(c.Request().Context(), token.Token)
 	if err != nil {
-		return wrapper.Response{Error: err, Status: http.StatusUnauthorized}
+		log.Error().Err(err.LogError).Msg("ValidateToken failed")
+		return wrapper.Response{Error: err.HTTPError, Status: http.StatusUnauthorized}
 	}
 
 	return wrapper.Response{Data: nil, Status: http.StatusOK}
@@ -103,6 +108,7 @@ func (h *AuthHandler) ForgotPassword(c echo.Context) wrapper.Response {
 // @Accept json
 // @Produce json
 // @Success      200  {object}  wrapper.SuccessResponse{data=dto.UserResponseBody}
+// @Failure      401  {object}  wrapper.FailResponse
 // @Security     Bearer
 // @Router       /auth/me [get]
 func (h *AuthHandler) Profile(c echo.Context) wrapper.Response {
