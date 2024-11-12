@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/www-printf/wepress-core/pkg/errors"
 )
 
 const (
@@ -32,7 +33,7 @@ type (
 
 // Response body
 type Response struct {
-	Error        error
+	Error        *errors.HTTPError
 	Data         interface{}
 	Status       int
 	Total        int64
@@ -58,8 +59,9 @@ func Translate(c echo.Context, res Response) error {
 
 	status := http.StatusOK
 	if res.Error != nil {
-		result[MessageField] = res.Error.Error()
+		result[MessageField] = res.Error.Message
 		result[SuccessField] = false
+		status = res.Error.Status
 	}
 
 	// get data

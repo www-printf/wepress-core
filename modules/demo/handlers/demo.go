@@ -5,6 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/www-printf/wepress-core/modules/demo/usecases"
+	"github.com/www-printf/wepress-core/pkg/constants"
 	"github.com/www-printf/wepress-core/pkg/wrapper"
 )
 
@@ -34,7 +35,7 @@ func (h *DemoHandler) Get(c echo.Context) wrapper.Response {
 	ctx := c.Request().Context()
 	demo, err := h.DemoUC.Get(ctx)
 	if err != nil {
-		return wrapper.Response{Error: err, Status: http.StatusInternalServerError}
+		return wrapper.Response{Error: constants.HTTPInternal}
 	}
 
 	return wrapper.Response{Data: demo, Status: http.StatusOK}
