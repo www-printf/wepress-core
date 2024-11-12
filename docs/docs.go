@@ -116,8 +116,20 @@ const docTemplate = `{
                         "headers": {
                             "Set-Cookie": {
                                 "type": "string",
-                                "description": "auth=token; Path=/; Secure"
+                                "description": "token=jwt-token; Path=/; Secure"
                             }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
                         }
                     }
                 }
@@ -158,6 +170,12 @@ const docTemplate = `{
                                     }
                                 }
                             ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
                         }
                     }
                 }
@@ -329,6 +347,19 @@ const docTemplate = `{
                 "token": {
                     "type": "string",
                     "example": "token"
+                }
+            }
+        },
+        "wrapper.FailResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Example message"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
                 }
             }
         },

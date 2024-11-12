@@ -7,19 +7,19 @@ import (
 	"encoding/base64"
 
 	jwtLib "github.com/golang-jwt/jwt/v5"
-	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/www-printf/wepress-core/modules/auth/dto"
 	"github.com/www-printf/wepress-core/modules/auth/repository"
 	"github.com/www-printf/wepress-core/pkg/constants"
-	"github.com/www-printf/wepress-core/pkg/crypto"
+	"github.com/www-printf/wepress-core/pkg/errors"
 	"github.com/www-printf/wepress-core/pkg/jwt"
+	"github.com/www-printf/wepress-core/pkg/key"
 )
 
 type AuthUsecase interface {
-	UserLogin(ctx context.Context, req *dto.LoginRequestBody) (*dto.AuthResponseBody, error)
-	ValidateToken(ctx context.Context, token string) (jwtLib.MapClaims, error)
+	UserLogin(ctx context.Context, req *dto.LoginRequestBody) (*dto.AuthResponseBody, *errors.Error)
+	ValidateToken(ctx context.Context, token string) (jwtLib.MapClaims, *errors.Error)
 }
 
 type authUsecase struct {
@@ -35,44 +35,38 @@ func NewAuthUsecase(authRepo repository.AuthRepository, tokenMng jwt.TokenManage
 }
 
 func (u *authUsecase) UserLogin(
-	ctx context.Context, req *dto.LoginRequestBody) (*dto.AuthResponseBody, error) {
+	ctx context.Context, req *dto.LoginRequestBody) (*dto.AuthResponseBody, *errors.Error) {
 	user, err := u.authRepo.GetUserByEmail(ctx, req.Email)
 	if err != nil {
-		log.Error().Err(err).Msg("failed to get user by email")
-		return nil, constants.ErrNotFound
+		return nil, &errors.Error{LogError: err, HTTPError: constants.ErrNotFound}
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
 	if err != nil {
-		log.Error().Err(err).Msg("failed to compare password")
-		return nil, constants.ErrUnauthorized
+		return nil, &errors.Error{LogError: err, HTTPError: constants.ErrUnauthorized}
 	}
 
 	if user.PrivKey == "" {
-		keyPair, err := crypto.GenerateKeyPair()
+		keyPair, err := key.GenerateKeyPair()
 		if err != nil {
-			log.Error().Err(err).Msg("failed to generate key pair")
-			return nil, constants.ErrInternal
+			return nil, &errors.Error{LogError: err, HTTPError: constants.ErrInternal}
 		}
 		err = u.authRepo.InsertKeyPair(ctx, user, keyPair)
 		if err != nil {
-			log.Error().Err(err).Msg("failed to insert key pair")
-			return nil, constants.ErrInternal
+			return nil, &errors.Error{LogError: err, HTTPError: constants.ErrInternal}
 		}
 	}
 
 	privKeyBytes, err := base64.StdEncoding.DecodeString(user.PrivKey)
 	if err != nil {
-		log.Error().Err(err).Msg("failed to decode private key")
-		return nil, constants.ErrInternal
+		return nil, &errors.Error{LogError: err, HTTPError: constants.ErrInternal}
 	}
 	claims := jwtLib.MapClaims{
 		"uid": user.ID.String(),
 	}
 	token, err := u.tokenManger.Generate(claims, ed25519.PrivateKey(privKeyBytes))
 	if err != nil {
-		log.Error().Err(err).Msg("failed to generate token")
-		return nil, constants.ErrInternal
+		return nil, &errors.Error{LogError: err, HTTPError: constants.ErrInternal}
 	}
 
 	return &dto.AuthResponseBody{
@@ -82,30 +76,31 @@ func (u *authUsecase) UserLogin(
 }
 
 func (u *authUsecase) ValidateToken(
-	ctx context.Context, token string) (jwtLib.MapClaims, error) {
+	ctx context.Context, token string) (jwtLib.MapClaims, *errors.Error) {
 	mapClaims, err := u.tokenManger.GetClaims(token)
 	if err != nil {
-		log.Error().Err(err).Msg("failed to get claims")
-		return nil, err
+		return nil, &errors.Error{LogError: err, HTTPError: constants.ErrInvalid}
 	}
 
 	uid := mapClaims["uid"].(string)
 	if uid == "" {
-		log.Error().Msg("uid is missing in token")
-		return nil, constants.ErrUnauthorized
+		return nil, &errors.Error{LogError: nil, HTTPError: constants.ErrInvalid}
 	}
 
 	user, err := u.authRepo.GetUserByID(ctx, uid)
 	if err != nil {
-		log.Error().Err(err).Msg("failed to get user by id")
-		return nil, constants.ErrNotFound
+		return nil, &errors.Error{LogError: err, HTTPError: constants.ErrNotFound}
 	}
 
 	pubKeyBytes, err := base64.StdEncoding.DecodeString(user.PubKey)
 	if err != nil {
-		log.Error().Err(err).Msg("failed to decode public key")
-		return nil, constants.ErrInternal
+		return nil, &errors.Error{LogError: err, HTTPError: constants.ErrInternal}
 	}
 
-	return u.tokenManger.Validate(token, ed25519.PublicKey(pubKeyBytes))
+	claims, err := u.tokenManger.Validate(token, ed25519.PublicKey(pubKeyBytes))
+	if err != nil {
+		return nil, &errors.Error{LogError: err, HTTPError: constants.ErrUnauthorized}
+	}
+
+	return claims, nil
 }

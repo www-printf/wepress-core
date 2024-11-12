@@ -13,28 +13,25 @@ import (
 func Auth(authUC usecases.AuthUsecase) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			token := ""
-			for _, cookie := range c.Cookies() {
-				if cookie.Name == "auth" {
-					token = cookie.Value
-					break
-				}
+			token, err := c.Cookie("token")
+			if err != nil {
+				return err
 			}
-			if token == "" {
+			if token.Value == "" {
 				authHeader := c.Request().Header.Get("Authorization")
-				if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+				if !strings.HasPrefix(authHeader, "Bearer ") {
 					return constants.ErrUnauthorized
 				}
-				token = strings.TrimPrefix(authHeader, "Bearer ")
-				if token == "" {
+				token.Value = strings.TrimPrefix(authHeader, "Bearer ")
+				if token.Value == "" {
 					log.Error().Msg("token is empty")
 					return constants.ErrUnauthorized
 				}
 			}
 
-			claims, err := authUC.ValidateToken(c.Request().Context(), token)
-			if err != nil {
-				return err
+			claims, errs := authUC.ValidateToken(c.Request().Context(), token.Value)
+			if errs != nil {
+				return errs.HTTPError
 			}
 			c.Set("uid", claims["uid"])
 

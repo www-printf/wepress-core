@@ -51,6 +51,15 @@ definitions:
     required:
     - token
     type: object
+  wrapper.FailResponse:
+    properties:
+      message:
+        example: Example message
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
   wrapper.SuccessResponse:
     properties:
       data: {}
@@ -115,7 +124,7 @@ paths:
           description: OK
           headers:
             Set-Cookie:
-              description: auth=token; Path=/; Secure
+              description: token=jwt-token; Path=/; Secure
               type: string
           schema:
             allOf:
@@ -124,6 +133,14 @@ paths:
                 data:
                   $ref: '#/definitions/dto.AuthResponseBody'
               type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
       security:
       - Bearer: []
       summary: Post Login
@@ -146,6 +163,10 @@ paths:
                 data:
                   $ref: '#/definitions/dto.UserResponseBody'
               type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
       security:
       - Bearer: []
       summary: Get User Profile
