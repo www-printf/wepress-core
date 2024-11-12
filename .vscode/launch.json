@@ -12,7 +12,7 @@
       "program": "${workspaceFolder}/cmd/api",
       "env": {
         "APP_HOST": "127.0.0.1",
-        "APP_PORT": "8000",
+        "APP_PORT": "8080",
         "ENV": "development",
         "DATABASE_DSN": "user=postgres password=password dbname=postgres port=5432 sslmode=disable"
       }

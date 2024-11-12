@@ -124,6 +124,12 @@
                         "schema": {
                             "$ref": "#/definitions/wrapper.FailResponse"
                         }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
                     }
                 }
             }
@@ -167,6 +173,12 @@
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/wrapper.FailResponse"
                         }
@@ -220,6 +232,18 @@
                                     }
                                 }
                             ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
                         }
                     }
                 }
@@ -320,6 +344,9 @@
         "dto.UserResponseBody": {
             "type": "object",
             "properties": {
+                "created_at": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },
@@ -327,7 +354,10 @@
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "string"
+                },
+                "pubkey": {
+                    "type": "string"
                 }
             }
         },

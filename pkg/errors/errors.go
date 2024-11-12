@@ -1,6 +1,6 @@
 package errors
 
-type Error struct {
-	LogError  error
-	HTTPError error
+type HTTPError struct {
+	Status  int
+	Message string
 }

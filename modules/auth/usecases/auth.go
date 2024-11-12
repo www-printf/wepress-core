@@ -18,8 +18,9 @@ import (
 )
 
 type AuthUsecase interface {
-	UserLogin(ctx context.Context, req *dto.LoginRequestBody) (*dto.AuthResponseBody, *errors.Error)
-	ValidateToken(ctx context.Context, token string) (jwtLib.MapClaims, *errors.Error)
+	UserLogin(ctx context.Context, req *dto.LoginRequestBody) (*dto.AuthResponseBody, *errors.HTTPError)
+	ValidateToken(ctx context.Context, token string) (jwtLib.MapClaims, *errors.HTTPError)
+	GetMe(ctx context.Context, uid string) (*dto.UserResponseBody, *errors.HTTPError)
 }
 
 type authUsecase struct {
@@ -35,38 +36,38 @@ func NewAuthUsecase(authRepo repository.AuthRepository, tokenMng jwt.TokenManage
 }
 
 func (u *authUsecase) UserLogin(
-	ctx context.Context, req *dto.LoginRequestBody) (*dto.AuthResponseBody, *errors.Error) {
+	ctx context.Context, req *dto.LoginRequestBody) (*dto.AuthResponseBody, *errors.HTTPError) {
 	user, err := u.authRepo.GetUserByEmail(ctx, req.Email)
 	if err != nil {
-		return nil, &errors.Error{LogError: err, HTTPError: constants.ErrNotFound}
+		return nil, constants.HTTPUnauthorized
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
 	if err != nil {
-		return nil, &errors.Error{LogError: err, HTTPError: constants.ErrUnauthorized}
+		return nil, constants.HTTPUnauthorized
 	}
 
 	if user.PrivKey == "" {
 		keyPair, err := key.GenerateKeyPair()
 		if err != nil {
-			return nil, &errors.Error{LogError: err, HTTPError: constants.ErrInternal}
+			return nil, constants.HTTPInternal
 		}
 		err = u.authRepo.InsertKeyPair(ctx, user, keyPair)
 		if err != nil {
-			return nil, &errors.Error{LogError: err, HTTPError: constants.ErrInternal}
+			return nil, constants.HTTPInternal
 		}
 	}
 
 	privKeyBytes, err := base64.StdEncoding.DecodeString(user.PrivKey)
 	if err != nil {
-		return nil, &errors.Error{LogError: err, HTTPError: constants.ErrInternal}
+		return nil, constants.HTTPInternal
 	}
 	claims := jwtLib.MapClaims{
 		"uid": user.ID.String(),
 	}
 	token, err := u.tokenManger.Generate(claims, ed25519.PrivateKey(privKeyBytes))
 	if err != nil {
-		return nil, &errors.Error{LogError: err, HTTPError: constants.ErrInternal}
+		return nil, constants.HTTPInternal
 	}
 
 	return &dto.AuthResponseBody{
@@ -76,31 +77,46 @@ func (u *authUsecase) UserLogin(
 }
 
 func (u *authUsecase) ValidateToken(
-	ctx context.Context, token string) (jwtLib.MapClaims, *errors.Error) {
+	ctx context.Context, token string) (jwtLib.MapClaims, *errors.HTTPError) {
 	mapClaims, err := u.tokenManger.GetClaims(token)
 	if err != nil {
-		return nil, &errors.Error{LogError: err, HTTPError: constants.ErrInvalid}
+		return nil, constants.HTTPUnauthorized
 	}
 
 	uid := mapClaims["uid"].(string)
 	if uid == "" {
-		return nil, &errors.Error{LogError: nil, HTTPError: constants.ErrInvalid}
+		return nil, constants.HTTPUnauthorized
 	}
 
 	user, err := u.authRepo.GetUserByID(ctx, uid)
 	if err != nil {
-		return nil, &errors.Error{LogError: err, HTTPError: constants.ErrNotFound}
+		return nil, constants.HTTPNotFound
 	}
 
 	pubKeyBytes, err := base64.StdEncoding.DecodeString(user.PubKey)
 	if err != nil {
-		return nil, &errors.Error{LogError: err, HTTPError: constants.ErrInternal}
+		return nil, constants.HTTPInternal
 	}
 
 	claims, err := u.tokenManger.Validate(token, ed25519.PublicKey(pubKeyBytes))
 	if err != nil {
-		return nil, &errors.Error{LogError: err, HTTPError: constants.ErrUnauthorized}
+		return nil, constants.HTTPUnauthorized
 	}
 
 	return claims, nil
+}
+
+func (u *authUsecase) GetMe(ctx context.Context, uid string) (*dto.UserResponseBody, *errors.HTTPError) {
+	user, err := u.authRepo.GetUserByID(ctx, uid)
+	if err != nil {
+		return nil, constants.HTTPNotFound
+	}
+
+	return &dto.UserResponseBody{
+		ID:        user.ID.String(),
+		Email:     user.Email,
+		Fullname:  user.FullName,
+		CreatedAt: user.CreatedAt.String(),
+		PubKey:    user.PubKey,
+	}, nil
 }

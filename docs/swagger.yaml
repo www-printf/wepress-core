@@ -36,12 +36,16 @@ definitions:
     type: object
   dto.UserResponseBody:
     properties:
+      created_at:
+        type: string
       email:
         type: string
       fullname:
         type: string
       id:
-        type: integer
+        type: string
+      pubkey:
+        type: string
     type: object
   dto.VerifyTokenRequestBody:
     properties:
@@ -141,6 +145,10 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
       security:
       - Bearer: []
       summary: Post Login
@@ -165,6 +173,10 @@ paths:
               type: object
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/wrapper.FailResponse'
       security:
@@ -196,6 +208,14 @@ paths:
                 data:
                   type: object
               type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
       security:
       - Bearer: []
       summary: Verify Token
