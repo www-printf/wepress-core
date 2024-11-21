@@ -40,6 +40,7 @@ type S3Config struct {
 	AccessKey       string `env:"S3_ACCESS_KEY"`
 	SecretKey       string `env:"S3_SECRET_KEY"`
 	PresignedExpire int    `env:"S3_PRESIGNED_EXPIRE" envDefault:"600"`
+	MaxSize         int64  `env:"S3_MAX_UPLOAD_SIZE" envDefault:"104857600"`
 }
 
 type AppValidator struct {

@@ -23,35 +23,35 @@ func NewDocumentHandler(g *echo.Group, documentUC usecases.DocumentUsecase, midd
 	api := g.Group("documents")
 	api.Use(middlewareMngr.Auth())
 
-	api.POST("/", wrapper.Wrap(h.SaveDocument)).Name = "document:save-document"
-	api.POST("/generate-presigned-url", wrapper.Wrap(h.GenerateURL)).Name = "document:generate-signed-url"
+	api.POST("/upload", wrapper.Wrap(h.SaveDocument)).Name = "document:save-document"
+	api.POST("/request-upload", wrapper.Wrap(h.RequestUpload)).Name = "document:generate-signed-url-for-upload"
 }
 
-// @Summary Generate Presigned URL
-// @Description Generate Presigned URL
+// @Summary Request Upload Document
+// @Description Generate Presigned URL For Upload Document
 // @Tags documents
 // @Accept json
 // @Produce json
-// @Param request body dto.PresignedURLRequestBody true "Presigned URL Request Body"
+// @Param request body dto.UploadRequestBody true "Presigned URL Request Body"
 // @Success      201  {object}  wrapper.SuccessResponse{data=dto.PresignedURLResponseBody}
 // @Failure      400  {object}  wrapper.FailResponse
 // @Failure      401  {object}  wrapper.FailResponse
 // @Failure      500  {object}  wrapper.FailResponse
 // @Security     Bearer
-// @Router       /documents/generate-presigned-url [post]
-func (h *DocumentHandler) GenerateURL(c echo.Context) wrapper.Response {
-	req := &dto.PresignedURLRequestBody{}
+// @Router       /documents/request-upload [post]
+func (h *DocumentHandler) RequestUpload(c echo.Context) wrapper.Response {
+	req := &dto.UploadRequestBody{}
 	if err := c.Bind(req); err != nil {
 		return wrapper.Response{Error: constants.HTTPBadRequest}
 	}
 
 	uid := c.Get("uid").(string)
-	url, err := h.documentUC.GeneratePresignedURL(c.Request().Context(), req, uid)
+	resp, err := h.documentUC.RequestUpload(c.Request().Context(), req, uid)
 	if err != nil {
 		return wrapper.Response{Error: err}
 	}
 
-	return wrapper.Response{Data: url, Status: http.StatusCreated}
+	return wrapper.Response{Data: resp, Status: http.StatusCreated}
 }
 
 // @Summary Save Document
@@ -65,7 +65,7 @@ func (h *DocumentHandler) GenerateURL(c echo.Context) wrapper.Response {
 // @Failure      401  {object}  wrapper.FailResponse
 // @Failure      500  {object}  wrapper.FailResponse
 // @Security     Bearer
-// @Router       /documents [post]
+// @Router       /documents/upload [post]
 func (h *DocumentHandler) SaveDocument(c echo.Context) wrapper.Response {
 	req := &dto.UploadDocumentRequestBody{}
 	if err := c.Bind(req); err != nil {

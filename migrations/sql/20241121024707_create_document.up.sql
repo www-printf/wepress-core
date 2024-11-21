@@ -14,6 +14,5 @@ CREATE TABLE IF NOT EXISTS metadata (
     mime_type VARCHAR NOT NULL,
     size INT NOT NULL,
     extension VARCHAR NOT NULL,
-    path VARCHAR NOT NULL,
     FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE ON UPDATE CASCADE
 );

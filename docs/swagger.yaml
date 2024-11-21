@@ -49,15 +49,11 @@ definitions:
     type: object
   dto.PresignedURLRequestBody:
     properties:
-      action:
-        example: upload
-        type: string
-      name:
-        example: example.pdf
-        type: string
+      size:
+        example: 10485760
+        type: integer
     required:
-    - action
-    - name
+    - size
     type: object
   dto.PresignedURLResponseBody:
     properties:
@@ -289,7 +285,48 @@ paths:
       summary: Get demo
       tags:
       - demo
-  /documents:
+  /documents/request-upload:
+    post:
+      consumes:
+      - application/json
+      description: Generate Presigned URL For Upload Document
+      parameters:
+      - description: Presigned URL Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PresignedURLRequestBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PresignedURLResponseBody'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: Request Upload Document
+      tags:
+      - documents
+  /documents/upload:
     post:
       consumes:
       - application/json
@@ -328,47 +365,6 @@ paths:
       security:
       - Bearer: []
       summary: Save Document
-      tags:
-      - documents
-  /documents/generate-presigned-url:
-    post:
-      consumes:
-      - application/json
-      description: Generate Presigned URL
-      parameters:
-      - description: Presigned URL Request Body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/dto.PresignedURLRequestBody'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/wrapper.SuccessResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.PresignedURLResponseBody'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/wrapper.FailResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/wrapper.FailResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/wrapper.FailResponse'
-      security:
-      - Bearer: []
-      summary: Generate Presigned URL
       tags:
       - documents
 securityDefinitions:

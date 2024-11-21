@@ -24,7 +24,6 @@ type MetaData struct {
 	Size       int64
 	MimeType   string
 	Extension  string
-	Path       string
 	DocumentID uuid.UUID `gorm:"type:uuid"`
 }
 

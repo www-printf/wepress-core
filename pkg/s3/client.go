@@ -2,7 +2,7 @@ package s3
 
 import (
 	"context"
-	"errors"
+	"strconv"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -12,11 +12,13 @@ import (
 	"github.com/rs/zerolog/log"
 
 	appCfg "github.com/www-printf/wepress-core/config"
-	"github.com/www-printf/wepress-core/pkg/constants"
+	"github.com/www-printf/wepress-core/utils"
 )
 
 type S3Client interface {
-	GeneratePresignedURL(ctx context.Context, bucketName, objectKey, action string) (string, error)
+	GeneratePostURL(ctx context.Context, bucketName, objectKey string, size int64) (*s3.PresignedPostRequest, error)
+	GenerateGetURL(ctx context.Context, bucketName, objectKey string) (string, error)
+	GenerateDeleteURL(ctx context.Context, bucketName, objectKey string) (string, error)
 }
 
 type s3Client struct {
@@ -52,46 +54,42 @@ func NewS3Client(appConf *appCfg.AppConfig) S3Client {
 	}
 }
 
-func (s *s3Client) GeneratePresignedURL(ctx context.Context, bucketName, objectKey, action string) (string, error) {
+func (s *s3Client) GeneratePostURL(ctx context.Context, bucketName, objectKey string, size int64) (*s3.PresignedPostRequest, error) {
 	if bucketName == "" {
 		bucketName = s.config.BucketName
 	}
-	switch action {
-	case constants.S3ActionDownload:
-		url, err := s.getObject(ctx, bucketName, objectKey)
-		if err != nil {
-			return "", err
-		}
-		return url, nil
-	case constants.S3ActionUpload:
-		url, err := s.putObject(ctx, bucketName, objectKey)
-		if err != nil {
-			return "", err
-		}
-		return url, nil
-	case constants.S3ActionDelete:
-		url, err := s.deleteObject(ctx, bucketName, objectKey)
-		if err != nil {
-			return "", err
-		}
-		return url, nil
-	default:
-		return "", errors.New("invalid action")
-	}
-
+	uploadSize := strconv.FormatInt(utils.Min(size, s.config.MaxSize), 10)
+	return s.postObject(ctx, bucketName, objectKey, uploadSize)
 }
 
-func (s *s3Client) putObject(ctx context.Context, bucketName, objectKey string) (string, error) {
-	request, err := s.presigner.PresignPutObject(ctx, &s3.PutObjectInput{
+func (s *s3Client) GenerateGetURL(ctx context.Context, bucketName, objectKey string) (string, error) {
+	if bucketName == "" {
+		bucketName = s.config.BucketName
+	}
+	return s.getObject(ctx, bucketName, objectKey)
+}
+
+func (s *s3Client) GenerateDeleteURL(ctx context.Context, bucketName, objectKey string) (string, error) {
+	if bucketName == "" {
+		bucketName = s.config.BucketName
+	}
+	return s.deleteObject(ctx, bucketName, objectKey)
+}
+
+func (s *s3Client) postObject(ctx context.Context, bucketName, objectKey string, size string) (*s3.PresignedPostRequest, error) {
+	request, err := s.presigner.PresignPostObject(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
-	}, func(opts *s3.PresignOptions) {
+	}, func(opts *s3.PresignPostOptions) {
 		opts.Expires = time.Duration(s.config.PresignedExpire * int(time.Second))
+		opts.Conditions = []interface{}{
+			[]string{"content-length-range", "0", size},
+		}
 	})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return request.URL, err
+	return request, err
 }
 
 func (s *s3Client) getObject(ctx context.Context, bucketName, objectKey string) (string, error) {

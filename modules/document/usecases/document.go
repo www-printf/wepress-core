@@ -3,7 +3,6 @@ package usecases
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -16,7 +15,7 @@ import (
 )
 
 type DocumentUsecase interface {
-	GeneratePresignedURL(ctx context.Context, req *dto.PresignedURLRequestBody, uid string) (*dto.PresignedURLResponseBody, *errors.HTTPError)
+	RequestUpload(ctx context.Context, req *dto.UploadRequestBody, uid string) (*dto.PresignedURLResponseBody, *errors.HTTPError)
 	SaveDocument(ctx context.Context, req *dto.UploadDocumentRequestBody, uid string) *errors.HTTPError
 }
 
@@ -35,15 +34,16 @@ func NewDocumentUsecase(
 	}
 }
 
-func (u *documentUsecase) GeneratePresignedURL(ctx context.Context, req *dto.PresignedURLRequestBody, uid string) (*dto.PresignedURLResponseBody, *errors.HTTPError) {
-	objectKey := u.generateObjectKey(uid, req.Name)
-	url, err := u.s3Client.GeneratePresignedURL(ctx, "", objectKey, req.Action)
+func (u *documentUsecase) RequestUpload(ctx context.Context, req *dto.UploadRequestBody, uid string) (*dto.PresignedURLResponseBody, *errors.HTTPError) {
+	objectKey := u.generateObjectKey(uid)
+	presigned, err := u.s3Client.GeneratePostURL(ctx, "", objectKey, req.RequestSize)
 	if err != nil {
 		return nil, constants.HTTPInternal
 	}
 	return &dto.PresignedURLResponseBody{
-		URL:       url,
+		URL:       presigned.URL,
 		ObjectKey: objectKey,
+		Fields:    presigned.Values,
 	}, nil
 }
 
@@ -63,7 +63,6 @@ func (u *documentUsecase) SaveDocument(ctx context.Context, req *dto.UploadDocum
 			Size:       req.MetaData.Size,
 			MimeType:   req.MetaData.MimeType,
 			Extension:  req.MetaData.Extension,
-			Path:       req.MetaData.Path,
 			DocumentID: docID,
 		},
 	}
@@ -74,7 +73,7 @@ func (u *documentUsecase) SaveDocument(ctx context.Context, req *dto.UploadDocum
 	return nil
 }
 
-func (u *documentUsecase) generateObjectKey(userID string, docName string) string {
-	timestamp := time.Now().Format("2006-01-02T15-04-05")
-	return fmt.Sprintf("%s/%s_%s", userID, timestamp, docName)
+func (u *documentUsecase) generateObjectKey(userID string) string {
+	name := uuid.New().String()
+	return fmt.Sprintf("%s/%s", userID, name)
 }

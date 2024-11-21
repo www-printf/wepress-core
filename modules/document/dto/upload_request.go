@@ -1,8 +1,7 @@
 package dto
 
-type PresignedURLRequestBody struct {
-	Name   string `json:"name" validate:"required" example:"example.pdf"`
-	Action string `json:"action" validate:"required" example:"upload"`
+type UploadRequestBody struct {
+	RequestSize int64 `json:"size" validate:"required" example:"10485760" description:"Upload file size in byte."`
 }
 
 type UploadDocumentRequestBody struct {
@@ -15,5 +14,4 @@ type MetaDataBody struct {
 	Size      int64  `json:"size"`
 	MimeType  string `json:"mime_type"`
 	Extension string `json:"extension"`
-	Path      string `json:"path"`
 }
