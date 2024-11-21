@@ -29,6 +29,17 @@ type AppConfig struct {
 	CORSConfig middleware.CORSConfig
 
 	Issuer string `env:"JWT_ISS" envDefault:"wepress"`
+
+	S3Config S3Config
+}
+
+type S3Config struct {
+	Region          string `env:"S3_REGION"`
+	BucketName      string `env:"S3_BUCKET_NAME"`
+	EndPoint        string `env:"S3_ENDPOINT"`
+	AccessKey       string `env:"S3_ACCESS_KEY"`
+	SecretKey       string `env:"S3_SECRET_KEY"`
+	PresignedExpire int    `env:"S3_PRESIGNED_EXPIRE" envDefault:"600"`
 }
 
 type AppValidator struct {

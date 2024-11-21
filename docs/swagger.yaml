@@ -34,6 +34,52 @@ definitions:
     - email
     - password
     type: object
+  dto.MetaDataBody:
+    properties:
+      extension:
+        type: string
+      mime_type:
+        type: string
+      name:
+        type: string
+      path:
+        type: string
+      size:
+        type: integer
+    type: object
+  dto.PresignedURLRequestBody:
+    properties:
+      action:
+        example: upload
+        type: string
+      name:
+        example: example.pdf
+        type: string
+    required:
+    - action
+    - name
+    type: object
+  dto.PresignedURLResponseBody:
+    properties:
+      object_key:
+        type: string
+      url:
+        type: string
+    required:
+    - object_key
+    - url
+    type: object
+  dto.UploadDocumentRequestBody:
+    properties:
+      key:
+        example: example.pdf
+        type: string
+      metadata:
+        $ref: '#/definitions/dto.MetaDataBody'
+    required:
+    - key
+    - metadata
+    type: object
   dto.UserResponseBody:
     properties:
       created_at:
@@ -243,6 +289,88 @@ paths:
       summary: Get demo
       tags:
       - demo
+  /documents:
+    post:
+      consumes:
+      - application/json
+      description: Save Document
+      parameters:
+      - description: Upload Document Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UploadDocumentRequestBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: Save Document
+      tags:
+      - documents
+  /documents/generate-presigned-url:
+    post:
+      consumes:
+      - application/json
+      description: Generate Presigned URL
+      parameters:
+      - description: Presigned URL Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PresignedURLRequestBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PresignedURLResponseBody'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: Generate Presigned URL
+      tags:
+      - documents
 securityDefinitions:
   AccessToken:
     description: Enter the token with the `Bearer ` prefix, e.g. `Bearer jwt_token_string`.

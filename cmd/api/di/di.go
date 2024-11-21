@@ -10,6 +10,8 @@ import (
 	"github.com/www-printf/wepress-core/modules"
 	"github.com/www-printf/wepress-core/modules/auth"
 	"github.com/www-printf/wepress-core/modules/demo"
+	"github.com/www-printf/wepress-core/modules/document"
+	"github.com/www-printf/wepress-core/pkg/middlewares"
 )
 
 func BuildDIContainer(
@@ -31,8 +33,9 @@ func BuildDIContainer(
 func RegisterModules(e *echo.Group, container *dig.Container) error {
 	var err error
 	mapModules := map[string]modules.ModuleInstance{
-		"demo": demo.Module,
-		"auth": auth.Module,
+		"demo":     demo.Module,
+		"auth":     auth.Module,
+		"document": document.Module,
 	}
 
 	gRoot := e.Group("/")
@@ -47,6 +50,8 @@ func RegisterModules(e *echo.Group, container *dig.Container) error {
 			return err
 		}
 	}
+
+	err = container.Provide(middlewares.NewMiddlewareManager)
 
 	for _, m := range mapModules {
 		err = m.RegisterHandlers(gRoot, container)

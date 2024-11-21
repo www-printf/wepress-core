@@ -5,7 +5,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/www-printf/wepress-core/config"
 	"github.com/www-printf/wepress-core/modules/auth/dto"
 	"github.com/www-printf/wepress-core/modules/auth/usecases"
 	"github.com/www-printf/wepress-core/pkg/constants"
@@ -17,7 +16,7 @@ type AuthHandler struct {
 	authUC usecases.AuthUsecase
 }
 
-func NewAuthHandler(g *echo.Group, authUC usecases.AuthUsecase, appConf *config.AppConfig) {
+func NewAuthHandler(g *echo.Group, authUC usecases.AuthUsecase, middlewareMngr middlewares.MiddlewareManager) {
 	h := &AuthHandler{
 		authUC: authUC,
 	}
@@ -27,7 +26,7 @@ func NewAuthHandler(g *echo.Group, authUC usecases.AuthUsecase, appConf *config.
 	api.POST("/verify", wrapper.Wrap(h.Validate)).Name = "auth:verify"
 	api.POST("/forgot-password", wrapper.Wrap(h.ForgotPassword)).Name = "auth:forgot-password"
 
-	api.Use(middlewares.Auth(authUC))
+	api.Use(middlewareMngr.Auth())
 	api.GET("/me", wrapper.Wrap(h.Profile)).Name = "get:profile"
 }
 
