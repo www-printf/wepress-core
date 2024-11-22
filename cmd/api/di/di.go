@@ -22,10 +22,15 @@ func BuildDIContainer(
 		return conf
 	})
 
-	_ = container.Provide(func() string {
-		return conf.DatabaseDSN
+	_ = container.Provide(func() datastore.DbDSN {
+		return datastore.DbDSN(conf.DatabaseDSN)
 	})
 	_ = container.Provide(datastore.ProvideDatabase)
+
+	_ = container.Provide(func() datastore.RedisAddr {
+		return datastore.RedisAddr(conf.RedisAddr)
+	})
+	_ = container.Provide(datastore.ProvideRedisClient)
 
 	return container
 }

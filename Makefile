@@ -14,6 +14,13 @@ stop-db:
 	docker stop wepress
 	docker rm wepress -v
 
+run-redis:
+	docker run --name wepress-redis -p 6379:6379 -d redis:latest
+
+stop-redis:
+	docker stop wepress-redis
+	docker rm wepress-redis -v
+
 run-api:
 	go run ./cmd/api/
 

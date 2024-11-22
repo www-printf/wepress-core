@@ -296,6 +296,151 @@ const docTemplate = `{
                 }
             }
         },
+        "/documents/download": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Download Document List",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "documents"
+                ],
+                "summary": "Download Document List",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Page Number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Documents Per Page",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/wrapper.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.DownloadDocumentsResponseBody"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/documents/download/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Download Document",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "documents"
+                ],
+                "summary": "Download Document",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Document ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/wrapper.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.DownloadDocumentResponseBody"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/documents/request-upload": {
             "post": {
                 "security": [
@@ -321,7 +466,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.PresignedURLRequestBody"
+                            "$ref": "#/definitions/dto.UploadRequestBody"
                         }
                     }
                 ],
@@ -337,7 +482,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/dto.PresignedURLResponseBody"
+                                            "$ref": "#/definitions/dto.RequestUploadResponseBody"
                                         }
                                     }
                                 }
@@ -425,6 +570,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/wrapper.FailResponse"
                         }
                     },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -452,6 +603,41 @@ const docTemplate = `{
                 },
                 "type": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.DownloadDocumentResponseBody": {
+            "type": "object",
+            "required": [
+                "id",
+                "metadata",
+                "url"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "d2728e88-aef1-4822-976a-63bdca2e89f9"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/dto.MetaDataBody"
+                },
+                "url": {
+                    "type": "string",
+                    "example": "https://bucket.s3-endpoint/object-key"
+                }
+            }
+        },
+        "dto.DownloadDocumentsResponseBody": {
+            "type": "object",
+            "required": [
+                "documents"
+            ],
+            "properties": {
+                "documents": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.DownloadDocumentResponseBody"
+                    }
                 }
             }
         },
@@ -488,43 +674,44 @@ const docTemplate = `{
         },
         "dto.MetaDataBody": {
             "type": "object",
-            "properties": {
-                "extension": {
-                    "type": "string"
-                },
-                "mime_type": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "size": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.PresignedURLRequestBody": {
-            "type": "object",
             "required": [
+                "extension",
+                "mime_type",
+                "name",
                 "size"
             ],
             "properties": {
+                "extension": {
+                    "type": "string",
+                    "example": "pdf"
+                },
+                "mime_type": {
+                    "type": "string",
+                    "example": "application/pdf"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "document"
+                },
                 "size": {
                     "type": "integer",
                     "example": 10485760
                 }
             }
         },
-        "dto.PresignedURLResponseBody": {
+        "dto.RequestUploadResponseBody": {
             "type": "object",
             "required": [
                 "object_key",
                 "url"
             ],
             "properties": {
+                "fields": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
                 "object_key": {
                     "type": "string"
                 },
@@ -542,10 +729,22 @@ const docTemplate = `{
             "properties": {
                 "key": {
                     "type": "string",
-                    "example": "example.pdf"
+                    "example": "4b793c1a06ea4ea0a2b019e3c04c3f1d/c211f30fbc56484e83ca9f96afaaeb8b"
                 },
                 "metadata": {
                     "$ref": "#/definitions/dto.MetaDataBody"
+                }
+            }
+        },
+        "dto.UploadRequestBody": {
+            "type": "object",
+            "required": [
+                "size"
+            ],
+            "properties": {
+                "size": {
+                    "type": "integer",
+                    "example": 10485760
                 }
             }
         },

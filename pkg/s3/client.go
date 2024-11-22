@@ -19,6 +19,7 @@ type S3Client interface {
 	GeneratePostURL(ctx context.Context, bucketName, objectKey string, size int64) (*s3.PresignedPostRequest, error)
 	GenerateGetURL(ctx context.Context, bucketName, objectKey string) (string, error)
 	GenerateDeleteURL(ctx context.Context, bucketName, objectKey string) (string, error)
+	GetConfig() *appCfg.S3Config
 }
 
 type s3Client struct {
@@ -114,4 +115,8 @@ func (s *s3Client) deleteObject(ctx context.Context, bucketName, objectKey strin
 		return "", err
 	}
 	return request.URL, err
+}
+
+func (s *s3Client) GetConfig() *appCfg.S3Config {
+	return s.config
 }

@@ -20,7 +20,7 @@ type AppConfig struct {
 	Port        string `env:"APP_PORT"`
 	BaseURL     string `env:"APP_BASE_URL"`
 	DatabaseDSN string `env:"DATABASE_DSN"`
-	// RedisURL    string `env:"REDIS_URI"`
+	RedisAddr    string `env:"REDIS_ADDR"`
 
 	AutoMigrate bool   `env:"AUTO_MIGRATE"`
 	LogLevel    string `env:"LOG_LEVEL"`
