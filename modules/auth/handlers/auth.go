@@ -28,6 +28,10 @@ func NewAuthHandler(g *echo.Group, authUC usecases.AuthUsecase, middlewareMngr m
 
 	api.Use(middlewareMngr.Auth())
 	api.GET("/me", wrapper.Wrap(h.Profile)).Name = "get:profile"
+
+	oauth := g.Group("/oauth")
+	oauth.GET("/:provider", wrapper.Wrap(h.RequestOauth)).Name = "oauth:initiate"
+	oauth.POST("/callback", wrapper.Wrap(h.HandleCallBack)).Name = "oauth:callback"
 }
 
 // @Summary Post Login
@@ -119,4 +123,54 @@ func (h *AuthHandler) Profile(c echo.Context) wrapper.Response {
 		return wrapper.Response{Error: err}
 	}
 	return wrapper.Response{Data: user, Status: http.StatusOK}
+}
+
+// @Summary Request Oauth
+// @Description Request Oauth
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Success      200  {object}  wrapper.SuccessResponse{data=dto.OauthResponse}
+// @Failure      401  {object}  wrapper.FailResponse
+// @Security     Bearer
+// @Router       /oauth/login [get]
+func (h *AuthHandler) RequestOauth(c echo.Context) wrapper.Response {
+	provider := c.Param("provider")
+	urlResp, err := h.authUC.InitiateOAuth(c.Request().Context(), provider)
+	if err != nil {
+		return wrapper.Response{Error: err}
+	}
+	return wrapper.Response{Data: urlResp, Status: http.StatusOK}
+}
+
+// @Summary Oauth Callback
+// @Description Oauth Callback
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body dto.OauthCallbackRequestBody true "Oauth Callback Request Body"
+// @Success      200  {object}  wrapper.SuccessResponse{data=dto.AuthResponseBody}
+// @Failure      401  {object}  wrapper.FailResponse
+// @Security     Bearer
+// @Router       /oauth/callback [post]
+func (h *AuthHandler) HandleCallBack(c echo.Context) wrapper.Response {
+	req := &dto.OauthCallbackRequestBody{}
+	if err := c.Bind(req); err != nil {
+		return wrapper.Response{Error: constants.HTTPBadRequest}
+	}
+
+	auth, err := h.authUC.HandleOAuthCallback(c.Request().Context(), req)
+	if err != nil {
+		return wrapper.Response{Error: err}
+	}
+
+	cookie := &http.Cookie{
+		Name:   "token",
+		Value:  auth.Token,
+		Path:   "/",
+		Secure: true,
+	}
+	c.SetCookie(cookie)
+
+	return wrapper.Response{Data: auth, Status: http.StatusOK}
 }

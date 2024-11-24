@@ -20,7 +20,7 @@ type AppConfig struct {
 	Port        string `env:"APP_PORT"`
 	BaseURL     string `env:"APP_BASE_URL"`
 	DatabaseDSN string `env:"DATABASE_DSN"`
-	RedisAddr    string `env:"REDIS_ADDR"`
+	RedisAddr   string `env:"REDIS_ADDR"`
 
 	AutoMigrate bool   `env:"AUTO_MIGRATE"`
 	LogLevel    string `env:"LOG_LEVEL"`
@@ -28,9 +28,12 @@ type AppConfig struct {
 	Validator  echo.Validator
 	CORSConfig middleware.CORSConfig
 
-	Issuer string `env:"JWT_ISS" envDefault:"wepress"`
+	Issuer      string `env:"JWT_ISS" envDefault:"wepress"`
+	TokenExpire int64  `env:"JWT_EXPIRE" envDefault:"86400"`
 
 	S3Config S3Config
+
+	OauthConfig OauthConfig
 }
 
 type S3Config struct {

@@ -13,6 +13,7 @@ type TokenManager interface {
 	Generate(claims jwt.MapClaims, privateKey ed25519.PrivateKey) (string, error)
 	Validate(token string, publicKey ed25519.PublicKey) (jwt.MapClaims, error)
 	GetClaims(token string) (jwt.MapClaims, error)
+	GetExpireTime() time.Duration
 }
 
 type tokenManager struct {
@@ -22,7 +23,7 @@ type tokenManager struct {
 
 func NewTokenManager(appConf *config.AppConfig) TokenManager {
 	return &tokenManager{
-		expiredTime: time.Hour * 24,
+		expiredTime: time.Duration(appConf.TokenExpire) * time.Second,
 		issuer:      appConf.Issuer,
 	}
 }
@@ -68,4 +69,8 @@ func (j *tokenManager) GetClaims(token string) (jwt.MapClaims, error) {
 	parsedToken, _, _ := new(jwt.Parser).ParseUnverified(token, jwt.MapClaims{})
 	mapClaims := parsedToken.Claims.(jwt.MapClaims)
 	return mapClaims, nil
+}
+
+func (j *tokenManager) GetExpireTime() time.Duration {
+	return j.expiredTime
 }

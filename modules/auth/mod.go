@@ -7,6 +7,7 @@ import (
 	"github.com/www-printf/wepress-core/modules"
 	"github.com/www-printf/wepress-core/modules/auth/handlers"
 	"github.com/www-printf/wepress-core/modules/auth/repository"
+	"github.com/www-printf/wepress-core/modules/auth/sessions"
 	"github.com/www-printf/wepress-core/modules/auth/usecases"
 	"github.com/www-printf/wepress-core/pkg/jwt"
 	"github.com/www-printf/wepress-core/pkg/middlewares"
@@ -23,6 +24,7 @@ func (m *AuthModule) RegisterRepositories(container *dig.Container) error {
 
 func (m *AuthModule) RegisterUseCases(container *dig.Container) error {
 	_ = container.Provide(jwt.NewTokenManager)
+	_ = container.Provide(sessions.NewSessionStorage)
 	_ = container.Provide(usecases.NewAuthUsecase)
 	return nil
 }
