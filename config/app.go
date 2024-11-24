@@ -20,13 +20,30 @@ type AppConfig struct {
 	Port        string `env:"APP_PORT"`
 	BaseURL     string `env:"APP_BASE_URL"`
 	DatabaseDSN string `env:"DATABASE_DSN"`
-	// RedisURL    string `env:"REDIS_URI"`
+	RedisAddr   string `env:"REDIS_ADDR"`
 
 	AutoMigrate bool   `env:"AUTO_MIGRATE"`
 	LogLevel    string `env:"LOG_LEVEL"`
 
 	Validator  echo.Validator
 	CORSConfig middleware.CORSConfig
+
+	Issuer      string `env:"JWT_ISS" envDefault:"wepress"`
+	TokenExpire int64  `env:"JWT_EXPIRE" envDefault:"86400"`
+
+	S3Config S3Config
+
+	OauthConfig OauthConfig
+}
+
+type S3Config struct {
+	Region          string `env:"S3_REGION"`
+	BucketName      string `env:"S3_BUCKET_NAME"`
+	EndPoint        string `env:"S3_ENDPOINT"`
+	AccessKey       string `env:"S3_ACCESS_KEY"`
+	SecretKey       string `env:"S3_SECRET_KEY"`
+	PresignedExpire int    `env:"S3_PRESIGNED_EXPIRE" envDefault:"600"`
+	MaxSize         int64  `env:"S3_MAX_UPLOAD_SIZE" envDefault:"104857600"`
 }
 
 type AppValidator struct {

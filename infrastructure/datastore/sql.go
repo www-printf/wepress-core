@@ -8,8 +8,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func ProvideDatabase(dbDSN string) *gorm.DB {
-	db, err := gorm.Open(postgres.Open(dbDSN), &gorm.Config{})
+type DbDSN string
+
+func ProvideDatabase(dbDSN DbDSN) *gorm.DB {
+	db, err := gorm.Open(postgres.Open(string(dbDSN)), &gorm.Config{})
 	if err != nil {
 		log.Panic().Msgf("Error when create DB: %v", err)
 	}
