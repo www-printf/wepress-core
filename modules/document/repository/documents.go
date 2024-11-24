@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 
@@ -34,7 +35,11 @@ func (r *documentRepository) GetByID(ctx context.Context, id string) (*domains.D
 	var document domains.Document
 	err := r.db.WithContext(ctx).Preload("MetaData").First(&document, "id = ?", id).Error
 	if err != nil {
-		return nil, err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		} else {
+			return nil, err
+		}
 	}
 	return &document, nil
 }
@@ -43,7 +48,11 @@ func (r *documentRepository) GetByOwnerID(ctx context.Context, ownerID string, o
 	var documents []domains.Document
 	err := r.db.WithContext(ctx).Preload("MetaData").Where("owner_id = ?", ownerID).Offset(offset).Limit(limit).Find(&documents).Error
 	if err != nil {
-		return nil, err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		} else {
+			return nil, err
+		}
 	}
 	return documents, nil
 }

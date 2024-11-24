@@ -157,13 +157,15 @@ func (u *authUsecase) InitiateOAuth(ctx context.Context, provider string) (*dto.
 		return nil, constants.HTTPBadRequest
 	}
 
-	switch provider {
-	case "github":
-		u.oauthStrategy = NewGithubOauthStrategy(&u.oauthConfig.Github)
-	case "google":
-		u.oauthStrategy = NewGoogleOauthStrategy(&u.oauthConfig.Google)
-	case "facebook":
-		u.oauthStrategy = NewFacebookOauthStrategy(&u.oauthConfig.Facebook)
+	if u.oauthStrategy == nil {
+		switch provider {
+		case "github":
+			u.oauthStrategy = NewGithubOauthStrategy(&u.oauthConfig.Github)
+		case "google":
+			u.oauthStrategy = NewGoogleOauthStrategy(&u.oauthConfig.Google)
+		case "facebook":
+			u.oauthStrategy = NewFacebookOauthStrategy(&u.oauthConfig.Facebook)
+		}
 	}
 
 	sess, err := u.oauthStrategy.GenerateOauthSession()
@@ -171,7 +173,7 @@ func (u *authUsecase) InitiateOAuth(ctx context.Context, provider string) (*dto.
 		return nil, constants.HTTPInternal
 	}
 
-	err = u.sessionStorage.SetOauthSession(ctx, sess, 2*time.Minute)
+	err = u.sessionStorage.SetOauthSession(ctx, sess, 10*time.Minute)
 	if err != nil {
 		return nil, constants.HTTPInternal
 	}
@@ -196,22 +198,19 @@ func (u *authUsecase) HandleOAuthCallback(
 		return nil, constants.HTTPBadRequest
 	}
 
-	if req.State != sess.State {
-		return nil, constants.HTTPBadRequest
-	}
-
-	switch sess.Provider {
-	case "github":
-		u.oauthStrategy = NewGithubOauthStrategy(&u.oauthConfig.Github)
-	case "google":
-		u.oauthStrategy = NewGoogleOauthStrategy(&u.oauthConfig.Google)
-	case "facebook":
-		u.oauthStrategy = NewFacebookOauthStrategy(&u.oauthConfig.Facebook)
+	if u.oauthStrategy == nil {
+		switch sess.Provider {
+		case "github":
+			u.oauthStrategy = NewGithubOauthStrategy(&u.oauthConfig.Github)
+		case "google":
+			u.oauthStrategy = NewGoogleOauthStrategy(&u.oauthConfig.Google)
+		case "facebook":
+			u.oauthStrategy = NewFacebookOauthStrategy(&u.oauthConfig.Facebook)
+		}
 	}
 
 	oauthDTO := &dto.OauthCallBackTransfer{
 		Code:     req.Code,
-		State:    req.State,
 		Verifier: sess.Verifier,
 	}
 	tok, err := u.oauthStrategy.ExchangeToken(oauthDTO)
@@ -241,10 +240,10 @@ func (u *authUsecase) HandleOAuthCallback(
 		user = &domains.User{
 			ID:       uuid.New(),
 			Email:    userInfo.Email,
-			FullName: "Default Name",
+			FullName: "N/A",
 			Password: password,
-			PubKey:   keyPair["pubKey"],
-			PrivKey:  keyPair["privKey"],
+			PubKey:   keyPair["pubkey"],
+			PrivKey:  keyPair["privkey"],
 		}
 		err = u.authRepo.InsertUser(ctx, user)
 		if err != nil {

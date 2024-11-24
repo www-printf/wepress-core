@@ -58,7 +58,7 @@ func (s *githubOauthStrategy) GenerateOauthSession() (*domains.OauthSession, err
 
 func (s *githubOauthStrategy) ExchangeToken(req *dto.OauthCallBackTransfer) (*oauth2.Token, error) {
 	ctx := context.Background()
-	tok, err := s.conf.Exchange(ctx, req.Code, oauth2.SetAuthURLParam("state", req.State))
+	tok, err := s.conf.Exchange(ctx, req.Code)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func (s *githubOauthStrategy) GetUserInfo(tok *oauth2.Token) (*dto.OauthUserResp
 	client := s.conf.Client(context.Background(), tok)
 	resp, err := client.Get(s.uinfoEndpoint)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 	defer resp.Body.Close()
 

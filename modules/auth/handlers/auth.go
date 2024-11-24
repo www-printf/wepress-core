@@ -29,7 +29,7 @@ func NewAuthHandler(g *echo.Group, authUC usecases.AuthUsecase, middlewareMngr m
 	api.Use(middlewareMngr.Auth())
 	api.GET("/me", wrapper.Wrap(h.Profile)).Name = "get:profile"
 
-	oauth := g.Group("/oauth")
+	oauth := g.Group("oauth")
 	oauth.GET("/:provider", wrapper.Wrap(h.RequestOauth)).Name = "oauth:initiate"
 	oauth.POST("/callback", wrapper.Wrap(h.HandleCallBack)).Name = "oauth:callback"
 }
