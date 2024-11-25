@@ -15,7 +15,9 @@ type PrinterResponseBody struct {
 
 type ListPrinterResponseBody struct {
 	Printers []PrinterResponseBody `json:"printers"`
-	Total    int64                 `json:"total"`
+	Total    int64                 `json:"total_printers"`
+	Active   int64                 `json:"active_printers"`
+	Inactive int64                 `json:"inactive_printers"`
 }
 
 type PrinterStatusResponseBody struct {

@@ -256,6 +256,61 @@ const docTemplate = `{
                 }
             }
         },
+        "/clusters/list": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List All Clusters",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clusters"
+                ],
+                "summary": "List All Clusters",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/wrapper.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ListClusterResponseBody"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/demo": {
             "get": {
                 "security": [
@@ -998,6 +1053,41 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.ClusterBody": {
+            "type": "object",
+            "properties": {
+                "added_at": {
+                    "type": "string"
+                },
+                "building": {
+                    "type": "string"
+                },
+                "campus": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "printer_statistic": {
+                    "$ref": "#/definitions/dto.PrinterStatBody"
+                },
+                "room": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.DownloadDocumentResponseBody": {
             "type": "object",
             "required": [
@@ -1045,16 +1135,36 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.ListClusterResponseBody": {
+            "type": "object",
+            "properties": {
+                "clusters": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.ClusterBody"
+                    }
+                },
+                "total_clusters": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.ListPrinterResponseBody": {
             "type": "object",
             "properties": {
+                "active_printers": {
+                    "type": "integer"
+                },
+                "inactive_printers": {
+                    "type": "integer"
+                },
                 "printers": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.PrinterResponseBody"
                     }
                 },
-                "total": {
+                "total_printers": {
                     "type": "integer"
                 }
             }
@@ -1168,6 +1278,20 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.PrinterStatBody": {
+            "type": "object",
+            "properties": {
+                "active_printers": {
+                    "type": "integer"
+                },
+                "inactive_printers": {
+                    "type": "integer"
+                },
+                "total_printers": {
+                    "type": "integer"
                 }
             }
         },

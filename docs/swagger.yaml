@@ -29,6 +29,29 @@ definitions:
       type:
         type: string
     type: object
+  dto.ClusterBody:
+    properties:
+      added_at:
+        type: string
+      building:
+        type: string
+      campus:
+        type: string
+      id:
+        type: integer
+      latitude:
+        type: number
+      longitude:
+        type: number
+      printer_statistic:
+        $ref: '#/definitions/dto.PrinterStatBody'
+      room:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
   dto.DownloadDocumentResponseBody:
     properties:
       id:
@@ -61,13 +84,26 @@ definitions:
     required:
     - email
     type: object
+  dto.ListClusterResponseBody:
+    properties:
+      clusters:
+        items:
+          $ref: '#/definitions/dto.ClusterBody'
+        type: array
+      total_clusters:
+        type: integer
+    type: object
   dto.ListPrinterResponseBody:
     properties:
+      active_printers:
+        type: integer
+      inactive_printers:
+        type: integer
       printers:
         items:
           $ref: '#/definitions/dto.PrinterResponseBody'
         type: array
-      total:
+      total_printers:
         type: integer
     type: object
   dto.LoginRequestBody:
@@ -147,6 +183,15 @@ definitions:
         type: string
       updated_at:
         type: string
+    type: object
+  dto.PrinterStatBody:
+    properties:
+      active_printers:
+        type: integer
+      inactive_printers:
+        type: integer
+      total_printers:
+        type: integer
     type: object
   dto.PrinterStatusResponseBody:
     properties:
@@ -385,6 +430,38 @@ paths:
       summary: Verify Token
       tags:
       - auth
+  /clusters/list:
+    get:
+      description: List All Clusters
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ListClusterResponseBody'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: List All Clusters
+      tags:
+      - clusters
   /demo:
     get:
       consumes:

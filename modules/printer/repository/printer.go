@@ -14,6 +14,8 @@ type PrinterRepository interface {
 	GetByID(ctx context.Context, id uint) (*domains.Printer, error)
 	ListByClusterID(ctx context.Context, clusterID uint) ([]domains.Printer, error)
 	CountByClusterID(ctx context.Context, clusterID uint) (int64, error)
+	CountActiveByClusterID(ctx context.Context, clusterID uint) (int64, error)
+	ListCluster(ctx context.Context) ([]domains.Cluster, error)
 }
 
 type printerRepository struct {
@@ -65,4 +67,26 @@ func (r *printerRepository) CountByClusterID(ctx context.Context, clusterID uint
 		return 0, err
 	}
 	return count, nil
+}
+
+func (r *printerRepository) CountActiveByClusterID(ctx context.Context, clusterID uint) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&domains.Printer{}).Where("cluster_id = ? AND status = ?", clusterID, domains.PrinterStatusActive).Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (r *printerRepository) ListCluster(ctx context.Context) ([]domains.Cluster, error) {
+	var clusters []domains.Cluster
+	err := r.db.WithContext(ctx).Find(&clusters).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		} else {
+			return nil, err
+		}
+	}
+	return clusters, nil
 }

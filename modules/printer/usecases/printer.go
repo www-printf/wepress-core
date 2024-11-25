@@ -20,6 +20,7 @@ type PrinterUsecase interface {
 	GetPrinter(ctx context.Context, printerID uint) (*dto.PrinterResponseBody, *errors.HTTPError)
 	ListPrinter(ctx context.Context, clusterID uint) (*dto.ListPrinterResponseBody, *errors.HTTPError)
 	ViewStatus(ctx context.Context, printerID uint) (*dto.PrinterStatusResponseBody, *errors.HTTPError)
+	ListCluster(ctx context.Context) (*dto.ListClusterResponseBody, *errors.HTTPError)
 }
 
 type printerUsecase struct {
@@ -106,10 +107,16 @@ func (u *printerUsecase) ListPrinter(ctx context.Context, clusterID uint) (*dto.
 	if err != nil {
 		return nil, constants.HTTPInternal
 	}
+	countActive, err := u.printerRepo.CountActiveByClusterID(ctx, clusterID)
+	if err != nil {
+		return nil, constants.HTTPInternal
+	}
 
 	return &dto.ListPrinterResponseBody{
 		Printers: printerResponses,
 		Total:    count,
+		Active:   countActive,
+		Inactive: count - countActive,
 	}, nil
 }
 
@@ -131,5 +138,44 @@ func (u *printerUsecase) ViewStatus(ctx context.Context, printerID uint) (*dto.P
 	return &dto.PrinterStatusResponseBody{
 		ID:     printerID,
 		Status: status,
+	}, nil
+}
+
+func (u *printerUsecase) ListCluster(ctx context.Context) (*dto.ListClusterResponseBody, *errors.HTTPError) {
+	clusters, err := u.printerRepo.ListCluster(ctx)
+	if err != nil {
+		return nil, constants.HTTPInternal
+	}
+
+	var clusterReponses []dto.ClusterBody
+	for _, cluster := range clusters {
+		totalPrinter, err := u.printerRepo.CountByClusterID(ctx, cluster.ID)
+		if err != nil {
+			return nil, constants.HTTPInternal
+		}
+		activePrinter, err := u.printerRepo.CountActiveByClusterID(ctx, cluster.ID)
+		if err != nil {
+			return nil, constants.HTTPInternal
+		}
+		clusterReponses = append(clusterReponses, dto.ClusterBody{
+			ID:        cluster.ID,
+			Status:    cluster.Status,
+			AddedAt:   cluster.AddedAt.Format("2006-01-02 15:04:05"),
+			UpdatedAt: cluster.UpdatedAt.Format("2006-01-02 15:04:05"),
+			Building:  cluster.Building,
+			Room:      cluster.Room,
+			Campus:    cluster.Campus,
+			Longitude: cluster.Longitude,
+			Latitude:  cluster.Latitude,
+			PrinterStat: dto.PrinterStatBody{
+				TotalPrinter:    totalPrinter,
+				ActivePrinter:   activePrinter,
+				InactivePrinter: totalPrinter - activePrinter,
+			},
+		})
+	}
+	return &dto.ListClusterResponseBody{
+		Clusters: clusterReponses,
+		Total:    int64(len(clusters)),
 	}, nil
 }

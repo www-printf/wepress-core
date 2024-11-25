@@ -21,13 +21,16 @@ func NewPrinterHandler(g *echo.Group, printerUC usecases.PrinterUsecase, middlew
 		printerUC: printerUC,
 	}
 
-	api := g.Group("printers")
-	api.Use(middlewareMngr.Auth())
+	printer := g.Group("printers")
+	printer.Use(middlewareMngr.Auth())
 
-	api.POST("/add", wrapper.Wrap(h.AddPrinter)).Name = "printer:add-printer"
-	api.GET("/list", wrapper.Wrap(h.ListPrinter)).Name = "printer:list-printer"
-	api.GET("/view-detail/:id", wrapper.Wrap(h.GetPrinter)).Name = "printer:view-detail"
-	api.GET("/view-status/:id", wrapper.Wrap(h.ViewStatus)).Name = "printer:view-status"
+	printer.POST("/add", wrapper.Wrap(h.AddPrinter)).Name = "printer:add-printer"
+	printer.GET("/list", wrapper.Wrap(h.ListPrinter)).Name = "printer:list-printer"
+	printer.GET("/view-detail/:id", wrapper.Wrap(h.GetPrinter)).Name = "printer:view-detail"
+	printer.GET("/view-status/:id", wrapper.Wrap(h.ViewStatus)).Name = "printer:view-status"
+
+	cluster := g.Group("clusters")
+	cluster.GET("/list", wrapper.Wrap(h.ListCluster)).Name = "printer:list-cluster"
 }
 
 // @Summary Add Printer
@@ -142,6 +145,25 @@ func (h *PrinterHandler) ViewStatus(c echo.Context) wrapper.Response {
 	resp, erro := h.printerUC.ViewStatus(c.Request().Context(), uint(id))
 	if erro != nil {
 		return wrapper.Response{Error: erro}
+	}
+
+	return wrapper.Response{Data: resp, Status: http.StatusOK}
+}
+
+// @Summary List All Clusters
+// @Description List All Clusters
+// @Tags clusters
+// @Produce json
+// @Success      200  {object}  wrapper.SuccessResponse{data=dto.ListClusterResponseBody}
+// @Failure      400  {object}  wrapper.FailResponse
+// @Failure      401  {object}  wrapper.FailResponse
+// @Failure      500  {object}  wrapper.FailResponse
+// @Security     Bearer
+// @Router       /clusters/list [get]
+func (h *PrinterHandler) ListCluster(c echo.Context) wrapper.Response {
+	resp, err := h.printerUC.ListCluster(c.Request().Context())
+	if err != nil {
+		return wrapper.Response{Error: err}
 	}
 
 	return wrapper.Response{Data: resp, Status: http.StatusOK}
