@@ -130,7 +130,7 @@ func (h *AuthHandler) Profile(c echo.Context) wrapper.Response {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Success      200  {object}  wrapper.SuccessResponse{data=dto.OauthResponse}
+// @Success      200  {object}  wrapper.SuccessResponse{data=dto.OauthResponseBody}
 // @Failure      401  {object}  wrapper.FailResponse
 // @Security     Bearer
 // @Router       /oauth/login [get]
