@@ -26,11 +26,17 @@ func NewPrinterHandler(g *echo.Group, printerUC usecases.PrinterUsecase, middlew
 
 	printer.POST("/add", wrapper.Wrap(h.AddPrinter)).Name = "printer:add-printer"
 	printer.GET("/list", wrapper.Wrap(h.ListPrinter)).Name = "printer:list-printer"
-	printer.GET("/view-detail/:id", wrapper.Wrap(h.GetPrinter)).Name = "printer:view-detail"
-	printer.GET("/view-status/:id", wrapper.Wrap(h.ViewStatus)).Name = "printer:view-status"
+	printer.GET("/info/:id", wrapper.Wrap(h.GetPrinter)).Name = "printer:view-info"
+	printer.GET("/monitor/:id", wrapper.Wrap(h.ViewStatus)).Name = "printer:view-status"
 
 	cluster := g.Group("clusters")
 	cluster.GET("/list", wrapper.Wrap(h.ListCluster)).Name = "printer:list-cluster"
+
+	job := g.Group("jobs")
+	job.POST("/submit", wrapper.Wrap(h.SubmitPrintJob)).Name = "printer:submit-printjob"
+	job.DELETE("/cancel/:id", wrapper.Wrap(h.CancelPrintJob)).Name = "printer:cancel-printjob"
+	job.GET("/list", wrapper.Wrap(h.ListPrintJob)).Name = "printer:list-printjob"
+	job.GET("/monitor/:id", wrapper.Wrap(h.ViewJobStatus)).Name = "printer:view-printjob-status"
 }
 
 // @Summary Add Printer
@@ -100,7 +106,7 @@ func (h *PrinterHandler) ListPrinter(c echo.Context) wrapper.Response {
 // @Failure      401  {object}  wrapper.FailResponse
 // @Failure      500  {object}  wrapper.FailResponse
 // @Security     Bearer
-// @Router       /printers/view-detail/{id} [get]
+// @Router       /printers/info/{id} [get]
 func (h *PrinterHandler) GetPrinter(c echo.Context) wrapper.Response {
 	idStr := c.Param("id")
 	if idStr == "" {
@@ -130,7 +136,7 @@ func (h *PrinterHandler) GetPrinter(c echo.Context) wrapper.Response {
 // @Failure      401  {object}  wrapper.FailResponse
 // @Failure      500  {object}  wrapper.FailResponse
 // @Security     Bearer
-// @Router       /printers/view-status/{id} [get]
+// @Router       /printers/monitor/{id} [get]
 func (h *PrinterHandler) ViewStatus(c echo.Context) wrapper.Response {
 	idStr := c.Param("id")
 	if idStr == "" {
@@ -167,4 +173,63 @@ func (h *PrinterHandler) ListCluster(c echo.Context) wrapper.Response {
 	}
 
 	return wrapper.Response{Data: resp, Status: http.StatusOK}
+}
+
+// @Summary Submit Print Job
+// @Description Submit Print Job
+// @Tags jobs
+// @Accept json
+// @Produce json
+// @Success      201  {object}  wrapper.SuccessResponse{data=nil}
+// @Failure      400  {object}  wrapper.FailResponse
+// @Failure      401  {object}  wrapper.FailResponse
+// @Failure      500  {object}  wrapper.FailResponse
+// @Security     Bearer
+// @Router       /jobs/submit [post]
+func (h *PrinterHandler) SubmitPrintJob(c echo.Context) wrapper.Response {
+	return wrapper.Response{Data: nil, Status: http.StatusCreated}
+}
+
+// @Summary Cancel Print Job
+// @Description Cancel Print Job
+// @Tags jobs
+// @Produce json
+// @Param id path string true "Print Job ID"
+// @Success      200  {object}  wrapper.SuccessResponse{data=nil}
+// @Failure      400  {object}  wrapper.FailResponse
+// @Failure      401  {object}  wrapper.FailResponse
+// @Failure      500  {object}  wrapper.FailResponse
+// @Security     Bearer
+// @Router       /jobs/cancel/{id} [delete]
+func (h *PrinterHandler) CancelPrintJob(c echo.Context) wrapper.Response {
+	return wrapper.Response{Data: nil, Status: http.StatusOK}
+}
+
+// @Summary List Print Job
+// @Description List Print Job
+// @Tags jobs
+// @Produce json
+// @Success      200  {object}  wrapper.SuccessResponse{data=nil}
+// @Failure      400  {object}  wrapper.FailResponse
+// @Failure      401  {object}  wrapper.FailResponse
+// @Failure      500  {object}  wrapper.FailResponse
+// @Security     Bearer
+// @Router       /jobs/list [get]
+func (h *PrinterHandler) ListPrintJob(c echo.Context) wrapper.Response {
+	return wrapper.Response{Data: nil, Status: http.StatusOK}
+}
+
+// @Summary View Print Job Status
+// @Description View Print Job Status
+// @Tags jobs
+// @Produce json
+// @Param id path string true "Print Job ID"
+// @Success      200  {object}  wrapper.SuccessResponse{data=nil}
+// @Failure      400  {object}  wrapper.FailResponse
+// @Failure      401  {object}  wrapper.FailResponse
+// @Failure      500  {object}  wrapper.FailResponse
+// @Security     Bearer
+// @Router       /jobs/monitor/{id} [get]
+func (h *PrinterHandler) ViewJobStatus(c echo.Context) wrapper.Response {
+	return wrapper.Response{Data: nil, Status: http.StatusOK}
 }

@@ -10,17 +10,10 @@ type ClusterBody struct {
 	Campus    string  `json:"campus"`
 	Longitude float64 `json:"longitude"`
 	Latitude  float64 `json:"latitude"`
-
-	PrinterStat PrinterStatBody `json:"printer_statistic"`
+	Total     int64   `json:"total_printers"`
 }
 
 type ListClusterResponseBody struct {
 	Clusters []ClusterBody `json:"clusters"`
 	Total    int64         `json:"total_clusters"`
-}
-
-type PrinterStatBody struct {
-	TotalPrinter    int64 `json:"total_printers"`
-	ActivePrinter   int64 `json:"active_printers"`
-	InactivePrinter int64 `json:"inactive_printers"`
 }

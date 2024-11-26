@@ -2,11 +2,8 @@ package usecases
 
 import (
 	"context"
-	"strconv"
-	"time"
 
 	"github.com/redis/go-redis/v9"
-	"github.com/rs/zerolog/log"
 
 	"github.com/www-printf/wepress-core/modules/printer/domains"
 	"github.com/www-printf/wepress-core/modules/printer/dto"
@@ -43,7 +40,6 @@ func (u *printerUsecase) AddPrinter(ctx context.Context, req *dto.AddPrinterRequ
 		SerialNumber: req.SerialNumber,
 		IPAddress:    req.IPAddress,
 		MACAddress:   req.MACAddress,
-		Status:       req.Status,
 	}
 	printer, err := u.printerRepo.Create(ctx, printer)
 	if err != nil {
@@ -57,7 +53,6 @@ func (u *printerUsecase) AddPrinter(ctx context.Context, req *dto.AddPrinterRequ
 		SerialNumber: printer.SerialNumber,
 		IPAddress:    printer.IPAddress,
 		MACAddress:   printer.MACAddress,
-		Status:       printer.Status,
 		AddedAt:      printer.AddedAt.Format("2006-01-02 15:04:05"),
 		UpdatedAt:    printer.UpdatedAt.Format("2006-01-02 15:04:05"),
 	}, nil
@@ -76,7 +71,6 @@ func (u *printerUsecase) GetPrinter(ctx context.Context, printerID uint) (*dto.P
 		SerialNumber: printer.SerialNumber,
 		IPAddress:    printer.IPAddress,
 		MACAddress:   printer.MACAddress,
-		Status:       printer.Status,
 		AddedAt:      printer.AddedAt.Format("2006-01-02 15:04:05"),
 		UpdatedAt:    printer.UpdatedAt.Format("2006-01-02 15:04:05"),
 	}, nil
@@ -97,7 +91,6 @@ func (u *printerUsecase) ListPrinter(ctx context.Context, clusterID uint) (*dto.
 			SerialNumber: printer.SerialNumber,
 			IPAddress:    printer.IPAddress,
 			MACAddress:   printer.MACAddress,
-			Status:       printer.Status,
 			AddedAt:      printer.AddedAt.Format("2006-01-02 15:04:05"),
 			UpdatedAt:    printer.UpdatedAt.Format("2006-01-02 15:04:05"),
 		})
@@ -107,38 +100,33 @@ func (u *printerUsecase) ListPrinter(ctx context.Context, clusterID uint) (*dto.
 	if err != nil {
 		return nil, constants.HTTPInternal
 	}
-	countActive, err := u.printerRepo.CountActiveByClusterID(ctx, clusterID)
-	if err != nil {
-		return nil, constants.HTTPInternal
-	}
 
 	return &dto.ListPrinterResponseBody{
 		Printers: printerResponses,
 		Total:    count,
-		Active:   countActive,
-		Inactive: count - countActive,
 	}, nil
 }
 
 func (u *printerUsecase) ViewStatus(ctx context.Context, printerID uint) (*dto.PrinterStatusResponseBody, *errors.HTTPError) {
-	status, err := u.redisClient.Get(ctx, strconv.FormatUint(uint64(printerID), 10)).Result()
-	if err != nil && err != redis.Nil {
-		log.Error().Err(err).Msg("1")
-		return nil, constants.HTTPInternal
-	}
-	if err == redis.Nil {
-		printer, err := u.printerRepo.GetByID(ctx, printerID)
-		if err != nil {
-			log.Error().Err(err).Msg("2")
-			return nil, constants.HTTPInternal
-		}
-		status = printer.Status
-		u.redisClient.Set(ctx, strconv.FormatUint(uint64(printerID), 10), status, 1*time.Hour)
-	}
-	return &dto.PrinterStatusResponseBody{
-		ID:     printerID,
-		Status: status,
-	}, nil
+	// status, err := u.redisClient.Get(ctx, strconv.FormatUint(uint64(printerID), 10)).Result()
+	// if err != nil && err != redis.Nil {
+	// 	log.Error().Err(err).Msg("1")
+	// 	return nil, constants.HTTPInternal
+	// }
+	// if err == redis.Nil {
+	// 	printer, err := u.printerRepo.GetByID(ctx, printerID)
+	// 	if err != nil {
+	// 		log.Error().Err(err).Msg("2")
+	// 		return nil, constants.HTTPInternal
+	// 	}
+	// 	status = printer.Status
+	// 	u.redisClient.Set(ctx, strconv.FormatUint(uint64(printerID), 10), status, 1*time.Hour)
+	// }
+	// return &dto.PrinterStatusResponseBody{
+	// 	ID:     printerID,
+	// 	Status: status,
+	// }, nil
+	return nil, nil
 }
 
 func (u *printerUsecase) ListCluster(ctx context.Context) (*dto.ListClusterResponseBody, *errors.HTTPError) {
@@ -153,13 +141,8 @@ func (u *printerUsecase) ListCluster(ctx context.Context) (*dto.ListClusterRespo
 		if err != nil {
 			return nil, constants.HTTPInternal
 		}
-		activePrinter, err := u.printerRepo.CountActiveByClusterID(ctx, cluster.ID)
-		if err != nil {
-			return nil, constants.HTTPInternal
-		}
 		clusterReponses = append(clusterReponses, dto.ClusterBody{
 			ID:        cluster.ID,
-			Status:    cluster.Status,
 			AddedAt:   cluster.AddedAt.Format("2006-01-02 15:04:05"),
 			UpdatedAt: cluster.UpdatedAt.Format("2006-01-02 15:04:05"),
 			Building:  cluster.Building,
@@ -167,11 +150,7 @@ func (u *printerUsecase) ListCluster(ctx context.Context) (*dto.ListClusterRespo
 			Campus:    cluster.Campus,
 			Longitude: cluster.Longitude,
 			Latitude:  cluster.Latitude,
-			PrinterStat: dto.PrinterStatBody{
-				TotalPrinter:    totalPrinter,
-				ActivePrinter:   activePrinter,
-				InactivePrinter: totalPrinter - activePrinter,
-			},
+			Total:     totalPrinter,
 		})
 	}
 	return &dto.ListClusterResponseBody{

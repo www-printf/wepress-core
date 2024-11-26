@@ -4,7 +4,6 @@ import "time"
 
 type Cluster struct {
 	ID        uint      `gorm:"column:id;primaryKey"`
-	Status    string    `gorm:"column:status"`
 	AddedAt   time.Time `gorm:"column:added_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at"`
 	Building  string    `gorm:"column:building"`

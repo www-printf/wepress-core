@@ -4,7 +4,6 @@ import "time"
 
 type Printer struct {
 	ID           uint      `gorm:"column:id;primaryKey"`
-	Status       string    `gorm:"column:status"`
 	AddedAt      time.Time `gorm:"column:added_at"`
 	UpdatedAt    time.Time `gorm:"column:updated_at"`
 	ClusterID    uint      `gorm:"column:cluster_id"`
@@ -14,8 +13,3 @@ type Printer struct {
 	IPAddress    string    `gorm:"column:ip_address"`
 	MACAddress   string    `gorm:"column:mac_address"`
 }
-
-const (
-	PrinterStatusActive   string = "active"
-	PrinterStatusInactive string = "inactive"
-)
