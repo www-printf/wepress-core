@@ -5,6 +5,142 @@ definitions:
       message:
         type: string
     type: object
+  dto.AuthResponseBody:
+    properties:
+      token:
+        type: string
+      type:
+        type: string
+    type: object
+  dto.DownloadDocumentResponseBody:
+    properties:
+      id:
+        example: d2728e88-aef1-4822-976a-63bdca2e89f9
+        type: string
+      metadata:
+        $ref: '#/definitions/dto.MetaDataBody'
+      url:
+        example: https://bucket.s3-endpoint/object-key
+        type: string
+    required:
+    - id
+    - metadata
+    - url
+    type: object
+  dto.DownloadDocumentsResponseBody:
+    properties:
+      documents:
+        items:
+          $ref: '#/definitions/dto.DownloadDocumentResponseBody'
+        type: array
+    required:
+    - documents
+    type: object
+  dto.ForgotPasswordRequestBody:
+    properties:
+      email:
+        example: example@email.com
+        type: string
+    required:
+    - email
+    type: object
+  dto.LoginRequestBody:
+    properties:
+      email:
+        example: example@email.com
+        type: string
+      password:
+        example: password
+        maxLength: 30
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.MetaDataBody:
+    properties:
+      extension:
+        example: pdf
+        type: string
+      mime_type:
+        example: application/pdf
+        type: string
+      name:
+        example: document
+        type: string
+      size:
+        example: 10485760
+        type: integer
+    required:
+    - extension
+    - mime_type
+    - name
+    - size
+    type: object
+  dto.RequestUploadResponseBody:
+    properties:
+      fields:
+        additionalProperties:
+          type: string
+        type: object
+      object_key:
+        type: string
+      url:
+        type: string
+    required:
+    - object_key
+    - url
+    type: object
+  dto.UploadDocumentRequestBody:
+    properties:
+      key:
+        example: 4b793c1a06ea4ea0a2b019e3c04c3f1d/c211f30fbc56484e83ca9f96afaaeb8b
+        type: string
+      metadata:
+        $ref: '#/definitions/dto.MetaDataBody'
+    required:
+    - key
+    - metadata
+    type: object
+  dto.UploadRequestBody:
+    properties:
+      size:
+        example: 10485760
+        type: integer
+    required:
+    - size
+    type: object
+  dto.UserResponseBody:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      fullname:
+        type: string
+      id:
+        type: string
+      pubkey:
+        type: string
+    type: object
+  dto.VerifyTokenRequestBody:
+    properties:
+      token:
+        example: token
+        type: string
+    required:
+    - token
+    type: object
+  wrapper.FailResponse:
+    properties:
+      message:
+        example: Example message
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
   wrapper.SuccessResponse:
     properties:
       data: {}
@@ -23,6 +159,145 @@ info:
   title: WePress API
   version: "1.0"
 paths:
+  /auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Request To Reset Password
+      parameters:
+      - description: Forgot Password Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ForgotPasswordRequestBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
+      summary: Forgot Password
+      tags:
+      - auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Post Login
+      parameters:
+      - description: Login Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequestBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Set-Cookie:
+              description: token=jwt-token; Path=/; Secure
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.AuthResponseBody'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: Post Login
+      tags:
+      - auth
+  /auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Get User Profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UserResponseBody'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: Get User Profile
+      tags:
+      - auth
+  /auth/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verify Token
+      parameters:
+      - description: Token to verify
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.VerifyTokenRequestBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: Verify Token
+      tags:
+      - auth
   /demo:
     get:
       consumes:
@@ -45,6 +320,179 @@ paths:
       summary: Get demo
       tags:
       - demo
+  /documents/download:
+    get:
+      description: Download Document List
+      parameters:
+      - description: Page Number
+        in: query
+        name: page
+        type: string
+      - description: Documents Per Page
+        in: query
+        name: per_page
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.DownloadDocumentsResponseBody'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: Download Document List
+      tags:
+      - documents
+  /documents/download/{id}:
+    get:
+      description: Download Document
+      parameters:
+      - description: Document ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.DownloadDocumentResponseBody'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: Download Document
+      tags:
+      - documents
+  /documents/request-upload:
+    post:
+      consumes:
+      - application/json
+      description: Generate Presigned URL For Upload Document
+      parameters:
+      - description: Presigned URL Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UploadRequestBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.RequestUploadResponseBody'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: Request Upload Document
+      tags:
+      - documents
+  /documents/upload:
+    post:
+      consumes:
+      - application/json
+      description: Save Document
+      parameters:
+      - description: Upload Document Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UploadDocumentRequestBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: Save Document
+      tags:
+      - documents
 securityDefinitions:
   AccessToken:
     description: Enter the token with the `Bearer ` prefix, e.g. `Bearer jwt_token_string`.

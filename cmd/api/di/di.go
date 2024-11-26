@@ -2,13 +2,16 @@ package di
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/rs/zerolog/log"
+
+	"go.uber.org/dig"
+
 	"github.com/www-printf/wepress-core/config"
 	"github.com/www-printf/wepress-core/infrastructure/datastore"
 	"github.com/www-printf/wepress-core/modules"
+	"github.com/www-printf/wepress-core/modules/auth"
 	"github.com/www-printf/wepress-core/modules/demo"
+	"github.com/www-printf/wepress-core/modules/document"
 	"github.com/www-printf/wepress-core/pkg/middlewares"
-	"go.uber.org/dig"
 )
 
 func BuildDIContainer(
@@ -19,7 +22,15 @@ func BuildDIContainer(
 		return conf
 	})
 
+	_ = container.Provide(func() datastore.DbDSN {
+		return datastore.DbDSN(conf.DatabaseDSN)
+	})
 	_ = container.Provide(datastore.ProvideDatabase)
+
+	_ = container.Provide(func() datastore.RedisAddr {
+		return datastore.RedisAddr(conf.RedisAddr)
+	})
+	_ = container.Provide(datastore.ProvideRedisClient)
 
 	return container
 }
@@ -27,34 +38,29 @@ func BuildDIContainer(
 func RegisterModules(e *echo.Group, container *dig.Container) error {
 	var err error
 	mapModules := map[string]modules.ModuleInstance{
-		"demo": demo.Module,
+		"demo":     demo.Module,
+		"auth":     auth.Module,
+		"document": document.Module,
 	}
 
 	gRoot := e.Group("/")
 	for _, m := range mapModules {
 		err = m.RegisterRepositories(container)
 		if err != nil {
-			log.Error().Msg(err.Error())
 			return err
 		}
 
 		err = m.RegisterUseCases(container)
 		if err != nil {
-			log.Error().Msg(err.Error())
 			return err
 		}
 	}
 
 	err = container.Provide(middlewares.NewMiddlewareManager)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return err
-	}
 
 	for _, m := range mapModules {
 		err = m.RegisterHandlers(gRoot, container)
 		if err != nil {
-			log.Error().Msg(err.Error())
 			return err
 		}
 	}
