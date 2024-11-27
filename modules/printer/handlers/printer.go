@@ -35,7 +35,7 @@ func NewPrinterHandler(g *echo.Group, printerUC usecases.PrinterUsecase, middlew
 	job := g.Group("print-jobs")
 	job.POST("/submit", wrapper.Wrap(h.SubmitPrintJob)).Name = "printer:submit-printjob"
 	job.POST("/cancel/:id", wrapper.Wrap(h.CancelPrintJob)).Name = "printer:cancel-printjob"
-	job.GET("/list", wrapper.Wrap(h.ListPrintJob)).Name = "printer:list-printjob"
+	job.GET("/list/:printerid", wrapper.Wrap(h.ListPrintJob)).Name = "printer:list-printjob"
 	job.GET("/monitor/:id", wrapper.Wrap(h.ViewJobStatus)).Name = "printer:view-printjob-status"
 }
 
@@ -234,7 +234,22 @@ func (h *PrinterHandler) CancelPrintJob(c echo.Context) wrapper.Response {
 // @Security     Bearer
 // @Router       /jobs/list [get]
 func (h *PrinterHandler) ListPrintJob(c echo.Context) wrapper.Response {
-	return wrapper.Response{Data: nil, Status: http.StatusOK}
+	printerIDStr := c.Param("printerid")
+	if printerIDStr == "" {
+		return wrapper.Response{Error: constants.HTTPBadRequest}
+	}
+
+	printerID, err := strconv.ParseUint(printerIDStr, 10, 32)
+	if err != nil {
+		return wrapper.Response{Error: constants.HTTPBadRequest}
+	}
+
+	resp, erro := h.printerUC.ListPrintJobs(c.Request().Context(), uint(printerID))
+	if erro != nil {
+		return wrapper.Response{Error: erro}
+	}
+
+	return wrapper.Response{Data: resp, Status: http.StatusOK}
 }
 
 // @Summary View Print Job Status

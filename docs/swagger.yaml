@@ -176,13 +176,28 @@ definitions:
     - a3
     - a4
     - a5
-    - a6
+    - a2
     type: string
     x-enum-varnames:
     - PaperSizeA3
     - PaperSizeA4
     - PaperSizeA5
-    - PaperSizeA6
+    - PaperSizeA2
+  dto.PrintJobResponseBody:
+    properties:
+      document_id:
+        type: string
+      estimated_time:
+        type: integer
+      id:
+        type: string
+      job_status:
+        type: string
+      pages_printed:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
   dto.PrintSettings:
     properties:
       color_mode:
@@ -244,11 +259,14 @@ definitions:
     type: object
   dto.SubmitPrintJobRequestBody:
     properties:
+      cluster_id:
+        type: integer
       document_id:
         type: string
       print_settings:
         $ref: '#/definitions/dto.PrintSettings'
     required:
+    - cluster_id
     - document_id
     - print_settings
     type: object
@@ -696,7 +714,7 @@ paths:
       tags:
       - documents
   /jobs/cancel/{id}:
-    delete:
+    post:
       description: Cancel Print Job
       parameters:
       - description: Print Job ID
@@ -784,7 +802,7 @@ paths:
             - $ref: '#/definitions/wrapper.SuccessResponse'
             - properties:
                 data:
-                  type: object
+                  $ref: '#/definitions/dto.PrintJobResponseBody'
               type: object
         "400":
           description: Bad Request
@@ -825,7 +843,7 @@ paths:
             - $ref: '#/definitions/wrapper.SuccessResponse'
             - properties:
                 data:
-                  type: object
+                  $ref: '#/definitions/dto.PrintJobResponseBody'
               type: object
         "400":
           description: Bad Request

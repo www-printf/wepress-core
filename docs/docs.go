@@ -641,7 +641,7 @@ const docTemplate = `{
             }
         },
         "/jobs/cancel/{id}": {
-            "delete": {
+            "post": {
                 "security": [
                     {
                         "Bearer": []
@@ -795,7 +795,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "object"
+                                            "$ref": "#/definitions/dto.PrintJobResponseBody"
                                         }
                                     }
                                 }
@@ -864,7 +864,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "object"
+                                            "$ref": "#/definitions/dto.PrintJobResponseBody"
                                         }
                                     }
                                 }
@@ -1517,14 +1517,37 @@ const docTemplate = `{
                 "a3",
                 "a4",
                 "a5",
-                "a6"
+                "a2"
             ],
             "x-enum-varnames": [
                 "PaperSizeA3",
                 "PaperSizeA4",
                 "PaperSizeA5",
-                "PaperSizeA6"
+                "PaperSizeA2"
             ]
+        },
+        "dto.PrintJobResponseBody": {
+            "type": "object",
+            "properties": {
+                "document_id": {
+                    "type": "string"
+                },
+                "estimated_time": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "job_status": {
+                    "type": "string"
+                },
+                "pages_printed": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                }
+            }
         },
         "dto.PrintSettings": {
             "type": "object",
@@ -1617,10 +1640,14 @@ const docTemplate = `{
         "dto.SubmitPrintJobRequestBody": {
             "type": "object",
             "required": [
+                "cluster_id",
                 "document_id",
                 "print_settings"
             ],
             "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
                 "document_id": {
                     "type": "string"
                 },

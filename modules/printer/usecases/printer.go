@@ -27,6 +27,7 @@ type PrinterUsecase interface {
 	SubmitPrintJob(ctx context.Context, req *dto.SubmitPrintJobRequestBody) (*dto.PrintJobResponseBody, *errors.HTTPError)
 	ViewJobStatus(ctx context.Context, jobID string) (*dto.PrintJobResponseBody, *errors.HTTPError)
 	CancelPrintJob(ctx context.Context, jobID string) *errors.HTTPError
+	ListPrintJobs(ctx context.Context, printerID uint) (*dto.ListPrintJobResponseBody, *errors.HTTPError)
 	ClosePrinterClient()
 }
 

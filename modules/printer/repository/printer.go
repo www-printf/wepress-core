@@ -20,6 +20,7 @@ type PrinterRepository interface {
 	GetDocument(ctx context.Context, docID string) (*doc.Document, error)
 	AddPrintHistory(ctx context.Context, history *domains.PrintHistory) error
 	GetPrintHistory(ctx context.Context, jobID string) (*domains.PrintHistory, error)
+	GetClusterIDByPrinterID(ctx context.Context, printerID uint) (uint, error)
 }
 
 type printerRepository struct {
@@ -131,4 +132,17 @@ func (r *printerRepository) GetPrintHistory(ctx context.Context, jobID string) (
 		}
 	}
 	return &history, nil
+}
+
+func (r *printerRepository) GetClusterIDByPrinterID(ctx context.Context, printerID uint) (uint, error) {
+	var printer domains.Printer
+	err := r.db.WithContext(ctx).First(&printer, printerID).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return 0, nil
+		} else {
+			return 0, err
+		}
+	}
+	return printer.ClusterID, nil
 }

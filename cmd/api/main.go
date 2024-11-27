@@ -15,7 +15,9 @@ import (
 	"github.com/www-printf/wepress-core/cmd/api/di"
 	"github.com/www-printf/wepress-core/config"
 	_ "github.com/www-printf/wepress-core/docs"
+	"github.com/www-printf/wepress-core/migrations"
 	"github.com/www-printf/wepress-core/modules/printer/usecases"
+	"gorm.io/gorm"
 )
 
 // @title WePress API
@@ -51,6 +53,16 @@ func main() {
 	e.Validator = cfg.AppConfig.Validator
 
 	container := di.BuildDIContainer(&cfg.AppConfig)
+
+	if cfg.AppConfig.AutoMigrate {
+		container.Invoke(func(db *gorm.DB) {
+			sqlDB, err := db.DB()
+			if err != nil {
+				log.Fatal().Msgf("Error when checking DB: %v", err)
+			}
+			migrations.RunAutoMigrate(sqlDB)
+		})
+	}
 
 	api := e.Group("/api/v1")
 	api.GET("/ping", func(c echo.Context) error {

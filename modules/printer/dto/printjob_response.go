@@ -8,3 +8,7 @@ type PrintJobResponseBody struct {
 	EstimatedTime int32  `json:"estimated_time"`
 	JobStatus     string `json:"job_status"`
 }
+
+type ListPrintJobResponseBody struct {
+	PrintJobs []PrintJobResponseBody `json:"print_jobs"`
+}

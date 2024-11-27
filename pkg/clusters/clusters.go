@@ -16,6 +16,7 @@ type ClusterManager interface {
 	SubmitPrintJob(ctx context.Context, reqJob *dto.PrintJobTranfer) (*proto.PrintJob, uint, error)
 	GetJobStatus(ctx context.Context, printerID uint, jobID string) (*proto.PrintJob, error)
 	CancelPrintJob(ctx context.Context, printerID uint, jobID string) error
+	ListPrintJobs(ctx context.Context, printerID uint) (*proto.ListPrintJobsResponse, error)
 	Close()
 }
 
@@ -82,6 +83,15 @@ func (m *clusterManager) CancelPrintJob(ctx context.Context, printerID uint, job
 		return err
 	}
 	return nil
+}
+
+func (m *clusterManager) ListPrintJobs(ctx context.Context, printerID uint) (*proto.ListPrintJobsResponse, error) {
+	printer := m.printers[printerID]
+	resp, err := printer.ListPrintJobs(ctx, &proto.Empty{})
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }
 
 func (m *clusterManager) findBestPrinter(ctx context.Context) (uint, error) {

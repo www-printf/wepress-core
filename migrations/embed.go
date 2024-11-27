@@ -39,7 +39,6 @@ func RunAutoMigrate(db *sql.DB) {
 		log.Fatal().Msgf("auto migration - init migrate: %v", err)
 	}
 
-	defer m.Close()
 	m.Log = &MLog{log: log.Logger}
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		log.Fatal().Msgf("auto migration - up: %v", err)

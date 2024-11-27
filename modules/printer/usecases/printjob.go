@@ -98,3 +98,33 @@ func (u *printerUsecase) CancelPrintJob(ctx context.Context, jobID string) *erro
 
 	return nil
 }
+
+func (u *printerUsecase) ListPrintJobs(ctx context.Context, printerID uint) (*dto.ListPrintJobResponseBody, *errors.HTTPError) {
+	clusterID, err := u.printerRepo.GetClusterIDByPrinterID(ctx, printerID)
+	if err != nil {
+		return nil, constants.HTTPInternal
+	}
+	if clusterID == 0 {
+		return nil, constants.HTTPNotFound
+	}
+
+	jobs, err := u.clusterManagers[clusterID].ListPrintJobs(ctx, printerID)
+	if err != nil {
+		return nil, constants.HTTPInternal
+	}
+
+	var resp dto.ListPrintJobResponseBody
+	resp.PrintJobs = []dto.PrintJobResponseBody{}
+	for _, job := range jobs.GetJobs() {
+		resp.PrintJobs = append(resp.PrintJobs, dto.PrintJobResponseBody{
+			ID:            job.GetJobId(),
+			DocumentID:    job.GetDocumentId(),
+			PagesPrinted:  job.GetPagesPrinted(),
+			EstimatedTime: job.GetEtaSeconds(),
+			JobStatus:     job.GetStatus().String(),
+			TotalPages:    job.GetTotalPages(),
+		})
+	}
+
+	return &resp, nil
+}
