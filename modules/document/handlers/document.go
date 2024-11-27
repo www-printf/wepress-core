@@ -63,7 +63,7 @@ func (h *DocumentHandler) RequestUpload(c echo.Context) wrapper.Response {
 // @Accept json
 // @Produce json
 // @Param request body dto.UploadDocumentRequestBody true "Upload Document Request Body"
-// @Success      201  {object}	wrapper.SuccessResponse{data=nil}
+// @Success      201  {object}	wrapper.SuccessResponse{data=dto.UploadResponseBody}
 // @Failure      400  {object}  wrapper.FailResponse
 // @Failure      401  {object}  wrapper.FailResponse
 // @Failure      403  {object}  wrapper.FailResponse

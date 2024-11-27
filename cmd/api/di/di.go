@@ -11,6 +11,7 @@ import (
 	"github.com/www-printf/wepress-core/modules/auth"
 	"github.com/www-printf/wepress-core/modules/demo"
 	"github.com/www-printf/wepress-core/modules/document"
+	"github.com/www-printf/wepress-core/modules/printer"
 	"github.com/www-printf/wepress-core/pkg/middlewares"
 )
 
@@ -41,6 +42,7 @@ func RegisterModules(e *echo.Group, container *dig.Container) error {
 		"demo":     demo.Module,
 		"auth":     auth.Module,
 		"document": document.Module,
+		"printer":  printer.Module,
 	}
 
 	gRoot := e.Group("/")

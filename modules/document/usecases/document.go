@@ -124,6 +124,8 @@ func (u *documentUsecase) DownloadDocument(ctx context.Context, docID string, ui
 			MimeType:  doc.MetaData.MimeType,
 			Extension: doc.MetaData.Extension,
 		},
+		CreatedAt: doc.CreatedAt.Format(time.RFC3339),
+		UpdatedAt: doc.UpdatedAt.Format(time.RFC3339),
 	}, nil
 }
 
@@ -154,6 +156,8 @@ func (u *documentUsecase) DownloadDocumentList(ctx context.Context, uid string, 
 				MimeType:  doc.MetaData.MimeType,
 				Extension: doc.MetaData.Extension,
 			},
+			CreatedAt: doc.CreatedAt.Format(time.RFC3339),
+			UpdatedAt: doc.UpdatedAt.Format(time.RFC3339),
 		})
 	}
 	return &dto.DownloadDocumentsResponseBody{

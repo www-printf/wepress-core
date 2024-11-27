@@ -15,6 +15,9 @@ import (
 	"github.com/www-printf/wepress-core/cmd/api/di"
 	"github.com/www-printf/wepress-core/config"
 	_ "github.com/www-printf/wepress-core/docs"
+	"github.com/www-printf/wepress-core/migrations"
+	"github.com/www-printf/wepress-core/modules/printer/usecases"
+	"gorm.io/gorm"
 )
 
 // @title WePress API
@@ -51,6 +54,16 @@ func main() {
 
 	container := di.BuildDIContainer(&cfg.AppConfig)
 
+	if cfg.AppConfig.AutoMigrate {
+		container.Invoke(func(db *gorm.DB) {
+			sqlDB, err := db.DB()
+			if err != nil {
+				log.Fatal().Msgf("Error when checking DB: %v", err)
+			}
+			migrations.RunAutoMigrate(sqlDB)
+		})
+	}
+
 	api := e.Group("/api/v1")
 	api.GET("/ping", func(c echo.Context) error {
 		return c.String(200, "pong")
@@ -79,6 +92,7 @@ func main() {
 	<-quit
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+	container.Invoke(func(printerUC usecases.PrinterUsecase) { printerUC.ClosePrinterClient() })
 	if err := e.Shutdown(ctx); err != nil {
 		log.Fatal().Msgf("Error when shutting down server: %v", err)
 	}

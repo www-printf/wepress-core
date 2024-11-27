@@ -56,4 +56,10 @@ git-hooks:
 routes:
 	go run ./tools/routes/
 
-.PHONY: routes run-api run-db build-api migration-create docs
+gen-proto:
+	protoc -I. \
+    --go_out=. \
+    --go-grpc_out=. \
+    modules/printer/proto/*.proto
+
+.PHONY: routes run-api run-db build-api migration-create docs gen-proto

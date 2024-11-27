@@ -2,6 +2,7 @@ package s3
 
 import (
 	"context"
+	"io"
 	"strconv"
 	"time"
 
@@ -19,11 +20,13 @@ type S3Client interface {
 	GeneratePostURL(ctx context.Context, bucketName, objectKey string, size int64) (*s3.PresignedPostRequest, error)
 	GenerateGetURL(ctx context.Context, bucketName, objectKey string) (string, error)
 	GenerateDeleteURL(ctx context.Context, bucketName, objectKey string) (string, error)
+	DownloadObject(ctx context.Context, bucketName, objectKey string) ([]byte, error)
 	GetConfig() *appCfg.S3Config
 }
 
 type s3Client struct {
 	config    *appCfg.S3Config
+	client    *s3.Client
 	presigner *s3.PresignClient
 }
 
@@ -51,6 +54,7 @@ func NewS3Client(appConf *appCfg.AppConfig) S3Client {
 
 	return &s3Client{
 		config:    &appConf.S3Config,
+		client:    client,
 		presigner: s3.NewPresignClient(client),
 	}
 }
@@ -77,12 +81,19 @@ func (s *s3Client) GenerateDeleteURL(ctx context.Context, bucketName, objectKey 
 	return s.deleteObject(ctx, bucketName, objectKey)
 }
 
+func (s *s3Client) DownloadObject(ctx context.Context, bucketName, objectKey string) ([]byte, error) {
+	if bucketName == "" {
+		bucketName = s.config.BucketName
+	}
+	return s.downloadObject(ctx, bucketName, objectKey)
+}
+
 func (s *s3Client) postObject(ctx context.Context, bucketName, objectKey string, size string) (*s3.PresignedPostRequest, error) {
 	request, err := s.presigner.PresignPostObject(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
 	}, func(opts *s3.PresignPostOptions) {
-		opts.Expires = time.Duration(s.config.PresignedExpire * int(time.Second))
+		opts.Expires = time.Duration(48 * time.Hour)
 		opts.Conditions = []interface{}{
 			[]string{"content-length-range", "0", size},
 		}
@@ -98,7 +109,7 @@ func (s *s3Client) getObject(ctx context.Context, bucketName, objectKey string) 
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
 	}, func(opts *s3.PresignOptions) {
-		opts.Expires = time.Duration(s.config.PresignedExpire * int(time.Second))
+		opts.Expires = time.Duration(s.config.PresignedExpire * int(time.Second) * 288)
 	})
 	if err != nil {
 		return "", err
@@ -115,6 +126,24 @@ func (s *s3Client) deleteObject(ctx context.Context, bucketName, objectKey strin
 		return "", err
 	}
 	return request.URL, err
+}
+
+func (s *s3Client) downloadObject(ctx context.Context, bucketName, objectKey string) ([]byte, error) {
+	result, err := s.client.GetObject(ctx, &s3.GetObjectInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(objectKey),
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer result.Body.Close()
+
+	content, err := io.ReadAll(result.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return content, nil
 }
 
 func (s *s3Client) GetConfig() *appCfg.S3Config {

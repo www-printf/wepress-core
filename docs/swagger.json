@@ -249,6 +249,61 @@
                 }
             }
         },
+        "/clusters/list": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List All Clusters",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clusters"
+                ],
+                "summary": "List All Clusters",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/wrapper.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ListClusterResponseBody"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/demo": {
             "get": {
                 "security": [
@@ -544,7 +599,7 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "object"
+                                            "$ref": "#/definitions/dto.UploadResponseBody"
                                         }
                                     }
                                 }
@@ -577,6 +632,633 @@
                     }
                 }
             }
+        },
+        "/oauth/callback": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Oauth Callback",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Oauth Callback",
+                "parameters": [
+                    {
+                        "description": "Oauth Callback Request Body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.OauthCallbackRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/wrapper.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.AuthResponseBody"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/oauth/login": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Request Oauth",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Request Oauth",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/wrapper.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.OauthResponseBody"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/print-jobs/cancel/{id}": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Cancel Print Job",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "print jobs"
+                ],
+                "summary": "Cancel Print Job",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Print Job ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/wrapper.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/print-jobs/list": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List Print Jobs of a Printer",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "print jobs"
+                ],
+                "summary": "List Print Jobs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Printer ID",
+                        "name": "printerid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/wrapper.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ListPrintJobResponseBody"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/print-jobs/monitor/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "View Print Job Status",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "print jobs"
+                ],
+                "summary": "View Print Job Status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Print Job ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/wrapper.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.PrintJobResponseBody"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/print-jobs/submit": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Submit Print Job",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "print jobs"
+                ],
+                "summary": "Submit Print Job",
+                "parameters": [
+                    {
+                        "description": "Submit Print Job Request Body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SubmitPrintJobRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/wrapper.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.PrintJobResponseBody"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/printers/add": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Add New Printer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "printers"
+                ],
+                "summary": "Add Printer",
+                "parameters": [
+                    {
+                        "description": "Add Printer Request Body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddPrinterRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/wrapper.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.PrinterResponseBody"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/printers/info/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "View Printer Detail",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "printers"
+                ],
+                "summary": "View Printer Detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Printer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/wrapper.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.PrinterResponseBody"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/printers/list": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List All Printers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "printers"
+                ],
+                "summary": "List Printer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Cluster ID",
+                        "name": "cluster_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/wrapper.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ListPrinterResponseBody"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/printers/monitor/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "View Printer Status",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "printers"
+                ],
+                "summary": "View Printer Status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Printer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/wrapper.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.PrinterStatusResponseBody"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -584,6 +1266,29 @@
             "type": "object",
             "properties": {
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AddPrinterRequestBody": {
+            "type": "object",
+            "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
+                "manufacturer": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "serial_number": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "uri": {
                     "type": "string"
                 }
             }
@@ -598,6 +1303,52 @@
                     "type": "string"
                 }
             }
+        },
+        "dto.ClusterBody": {
+            "type": "object",
+            "properties": {
+                "added_at": {
+                    "type": "string"
+                },
+                "building": {
+                    "type": "string"
+                },
+                "campus": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "room": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "total_printers": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ColorMode": {
+            "type": "string",
+            "enum": [
+                "color",
+                "greyscale"
+            ],
+            "x-enum-varnames": [
+                "ColorModeColor",
+                "ColorModeGreyscale"
+            ]
         },
         "dto.DownloadDocumentResponseBody": {
             "type": "object",
@@ -643,6 +1394,45 @@
                 "email": {
                     "type": "string",
                     "example": "example@email.com"
+                }
+            }
+        },
+        "dto.ListClusterResponseBody": {
+            "type": "object",
+            "properties": {
+                "clusters": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.ClusterBody"
+                    }
+                },
+                "total_clusters": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.ListPrintJobResponseBody": {
+            "type": "object",
+            "properties": {
+                "print_jobs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.PrintJobResponseBody"
+                    }
+                }
+            }
+        },
+        "dto.ListPrinterResponseBody": {
+            "type": "object",
+            "properties": {
+                "printers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.PrinterResponseBody"
+                    }
+                },
+                "total_printers": {
+                    "type": "integer"
                 }
             }
         },
@@ -692,6 +1482,168 @@
                 }
             }
         },
+        "dto.OauthCallbackRequestBody": {
+            "type": "object",
+            "required": [
+                "code",
+                "state"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "code"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string",
+                    "example": "state"
+                }
+            }
+        },
+        "dto.OauthResponseBody": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.Orientation": {
+            "type": "string",
+            "enum": [
+                "portrait",
+                "landscape"
+            ],
+            "x-enum-varnames": [
+                "OrientationPortrait",
+                "OrientationLandscape"
+            ]
+        },
+        "dto.PaperSize": {
+            "type": "string",
+            "enum": [
+                "a3",
+                "a4",
+                "a5",
+                "a2"
+            ],
+            "x-enum-varnames": [
+                "PaperSizeA3",
+                "PaperSizeA4",
+                "PaperSizeA5",
+                "PaperSizeA2"
+            ]
+        },
+        "dto.PrintJobResponseBody": {
+            "type": "object",
+            "properties": {
+                "document_id": {
+                    "type": "string"
+                },
+                "estimated_time": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "job_status": {
+                    "type": "string"
+                },
+                "pages_printed": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.PrintSettings": {
+            "type": "object",
+            "required": [
+                "color_mode",
+                "copies",
+                "double_sided",
+                "orientation",
+                "paper_size"
+            ],
+            "properties": {
+                "color_mode": {
+                    "$ref": "#/definitions/dto.ColorMode"
+                },
+                "copies": {
+                    "type": "integer"
+                },
+                "double_sided": {
+                    "type": "boolean"
+                },
+                "orientation": {
+                    "$ref": "#/definitions/dto.Orientation"
+                },
+                "paper_size": {
+                    "$ref": "#/definitions/dto.PaperSize"
+                }
+            }
+        },
+        "dto.PrinterResponseBody": {
+            "type": "object",
+            "properties": {
+                "added_at": {
+                    "type": "string"
+                },
+                "cluster_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "manufacturer": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "serial_number": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.PrinterStatus": {
+            "type": "string",
+            "enum": [
+                "idle",
+                "printing",
+                "error",
+                "unspecified"
+            ],
+            "x-enum-varnames": [
+                "PrinterStatusIdle",
+                "PrinterStatusPrinting",
+                "PrinterStatusError",
+                "PrinterStatusUnspecified"
+            ]
+        },
+        "dto.PrinterStatusResponseBody": {
+            "type": "object",
+            "properties": {
+                "running_job": {
+                    "$ref": "#/definitions/dto.PrintJobResponseBody"
+                },
+                "status": {
+                    "$ref": "#/definitions/dto.PrinterStatus"
+                }
+            }
+        },
         "dto.RequestUploadResponseBody": {
             "type": "object",
             "required": [
@@ -710,6 +1662,25 @@
                 },
                 "url": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.SubmitPrintJobRequestBody": {
+            "type": "object",
+            "required": [
+                "cluster_id",
+                "document_id",
+                "print_settings"
+            ],
+            "properties": {
+                "cluster_id": {
+                    "type": "integer"
+                },
+                "document_id": {
+                    "type": "string"
+                },
+                "print_settings": {
+                    "$ref": "#/definitions/dto.PrintSettings"
                 }
             }
         },
@@ -738,6 +1709,21 @@
                 "size": {
                     "type": "integer",
                     "example": 10485760
+                }
+            }
+        },
+        "dto.UploadResponseBody": {
+            "type": "object",
+            "required": [
+                "id",
+                "metadata"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/dto.MetaDataBody"
                 }
             }
         },

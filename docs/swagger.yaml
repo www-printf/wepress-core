@@ -5,6 +5,21 @@ definitions:
       message:
         type: string
     type: object
+  dto.AddPrinterRequestBody:
+    properties:
+      cluster_id:
+        type: integer
+      manufacturer:
+        type: string
+      model:
+        type: string
+      serial_number:
+        type: string
+      status:
+        type: string
+      uri:
+        type: string
+    type: object
   dto.AuthResponseBody:
     properties:
       token:
@@ -12,6 +27,37 @@ definitions:
       type:
         type: string
     type: object
+  dto.ClusterBody:
+    properties:
+      added_at:
+        type: string
+      building:
+        type: string
+      campus:
+        type: string
+      id:
+        type: integer
+      latitude:
+        type: number
+      longitude:
+        type: number
+      room:
+        type: string
+      status:
+        type: string
+      total_printers:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  dto.ColorMode:
+    enum:
+    - color
+    - greyscale
+    type: string
+    x-enum-varnames:
+    - ColorModeColor
+    - ColorModeGreyscale
   dto.DownloadDocumentResponseBody:
     properties:
       id:
@@ -43,6 +89,31 @@ definitions:
         type: string
     required:
     - email
+    type: object
+  dto.ListClusterResponseBody:
+    properties:
+      clusters:
+        items:
+          $ref: '#/definitions/dto.ClusterBody'
+        type: array
+      total_clusters:
+        type: integer
+    type: object
+  dto.ListPrintJobResponseBody:
+    properties:
+      print_jobs:
+        items:
+          $ref: '#/definitions/dto.PrintJobResponseBody'
+        type: array
+    type: object
+  dto.ListPrinterResponseBody:
+    properties:
+      printers:
+        items:
+          $ref: '#/definitions/dto.PrinterResponseBody'
+        type: array
+      total_printers:
+        type: integer
     type: object
   dto.LoginRequestBody:
     properties:
@@ -78,6 +149,119 @@ definitions:
     - name
     - size
     type: object
+  dto.OauthCallbackRequestBody:
+    properties:
+      code:
+        example: code
+        type: string
+      error:
+        type: string
+      provider:
+        type: string
+      state:
+        example: state
+        type: string
+    required:
+    - code
+    - state
+    type: object
+  dto.OauthResponseBody:
+    properties:
+      url:
+        type: string
+    type: object
+  dto.Orientation:
+    enum:
+    - portrait
+    - landscape
+    type: string
+    x-enum-varnames:
+    - OrientationPortrait
+    - OrientationLandscape
+  dto.PaperSize:
+    enum:
+    - a3
+    - a4
+    - a5
+    - a2
+    type: string
+    x-enum-varnames:
+    - PaperSizeA3
+    - PaperSizeA4
+    - PaperSizeA5
+    - PaperSizeA2
+  dto.PrintJobResponseBody:
+    properties:
+      document_id:
+        type: string
+      estimated_time:
+        type: integer
+      id:
+        type: string
+      job_status:
+        type: string
+      pages_printed:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  dto.PrintSettings:
+    properties:
+      color_mode:
+        $ref: '#/definitions/dto.ColorMode'
+      copies:
+        type: integer
+      double_sided:
+        type: boolean
+      orientation:
+        $ref: '#/definitions/dto.Orientation'
+      paper_size:
+        $ref: '#/definitions/dto.PaperSize'
+    required:
+    - color_mode
+    - copies
+    - double_sided
+    - orientation
+    - paper_size
+    type: object
+  dto.PrinterResponseBody:
+    properties:
+      added_at:
+        type: string
+      cluster_id:
+        type: integer
+      id:
+        type: integer
+      manufacturer:
+        type: string
+      model:
+        type: string
+      serial_number:
+        type: string
+      updated_at:
+        type: string
+      uri:
+        type: string
+    type: object
+  dto.PrinterStatus:
+    enum:
+    - idle
+    - printing
+    - error
+    - unspecified
+    type: string
+    x-enum-varnames:
+    - PrinterStatusIdle
+    - PrinterStatusPrinting
+    - PrinterStatusError
+    - PrinterStatusUnspecified
+  dto.PrinterStatusResponseBody:
+    properties:
+      running_job:
+        $ref: '#/definitions/dto.PrintJobResponseBody'
+      status:
+        $ref: '#/definitions/dto.PrinterStatus'
+    type: object
   dto.RequestUploadResponseBody:
     properties:
       fields:
@@ -91,6 +275,19 @@ definitions:
     required:
     - object_key
     - url
+    type: object
+  dto.SubmitPrintJobRequestBody:
+    properties:
+      cluster_id:
+        type: integer
+      document_id:
+        type: string
+      print_settings:
+        $ref: '#/definitions/dto.PrintSettings'
+    required:
+    - cluster_id
+    - document_id
+    - print_settings
     type: object
   dto.UploadDocumentRequestBody:
     properties:
@@ -110,6 +307,16 @@ definitions:
         type: integer
     required:
     - size
+    type: object
+  dto.UploadResponseBody:
+    properties:
+      id:
+        type: string
+      metadata:
+        $ref: '#/definitions/dto.MetaDataBody'
+    required:
+    - id
+    - metadata
     type: object
   dto.UserResponseBody:
     properties:
@@ -298,6 +505,38 @@ paths:
       summary: Verify Token
       tags:
       - auth
+  /clusters/list:
+    get:
+      description: List All Clusters
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ListClusterResponseBody'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: List All Clusters
+      tags:
+      - clusters
   /demo:
     get:
       consumes:
@@ -470,7 +709,7 @@ paths:
             - $ref: '#/definitions/wrapper.SuccessResponse'
             - properties:
                 data:
-                  type: object
+                  $ref: '#/definitions/dto.UploadResponseBody'
               type: object
         "400":
           description: Bad Request
@@ -493,6 +732,376 @@ paths:
       summary: Save Document
       tags:
       - documents
+  /oauth/callback:
+    post:
+      consumes:
+      - application/json
+      description: Oauth Callback
+      parameters:
+      - description: Oauth Callback Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.OauthCallbackRequestBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.AuthResponseBody'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: Oauth Callback
+      tags:
+      - auth
+  /oauth/login:
+    get:
+      consumes:
+      - application/json
+      description: Request Oauth
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.OauthResponseBody'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: Request Oauth
+      tags:
+      - auth
+  /print-jobs/cancel/{id}:
+    post:
+      description: Cancel Print Job
+      parameters:
+      - description: Print Job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: Cancel Print Job
+      tags:
+      - print jobs
+  /print-jobs/list:
+    get:
+      description: List Print Jobs of a Printer
+      parameters:
+      - description: Printer ID
+        in: path
+        name: printerid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ListPrintJobResponseBody'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: List Print Jobs
+      tags:
+      - print jobs
+  /print-jobs/monitor/{id}:
+    get:
+      description: View Print Job Status
+      parameters:
+      - description: Print Job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PrintJobResponseBody'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: View Print Job Status
+      tags:
+      - print jobs
+  /print-jobs/submit:
+    post:
+      consumes:
+      - application/json
+      description: Submit Print Job
+      parameters:
+      - description: Submit Print Job Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SubmitPrintJobRequestBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PrintJobResponseBody'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: Submit Print Job
+      tags:
+      - print jobs
+  /printers/add:
+    post:
+      consumes:
+      - application/json
+      description: Add New Printer
+      parameters:
+      - description: Add Printer Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddPrinterRequestBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PrinterResponseBody'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: Add Printer
+      tags:
+      - printers
+  /printers/info/{id}:
+    get:
+      description: View Printer Detail
+      parameters:
+      - description: Printer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PrinterResponseBody'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: View Printer Detail
+      tags:
+      - printers
+  /printers/list:
+    get:
+      consumes:
+      - application/json
+      description: List All Printers
+      parameters:
+      - description: Cluster ID
+        in: query
+        name: cluster_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ListPrinterResponseBody'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: List Printer
+      tags:
+      - printers
+  /printers/monitor/{id}:
+    get:
+      description: View Printer Status
+      parameters:
+      - description: Printer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PrinterStatusResponseBody'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: View Printer Status
+      tags:
+      - printers
 securityDefinitions:
   AccessToken:
     description: Enter the token with the `Bearer ` prefix, e.g. `Bearer jwt_token_string`.
