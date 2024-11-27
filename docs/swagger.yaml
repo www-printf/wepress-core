@@ -9,10 +9,6 @@ definitions:
     properties:
       cluster_id:
         type: integer
-      ip_address:
-        type: string
-      mac_address:
-        type: string
       manufacturer:
         type: string
       model:
@@ -20,6 +16,8 @@ definitions:
       serial_number:
         type: string
       status:
+        type: string
+      uri:
         type: string
     type: object
   dto.AuthResponseBody:
@@ -52,6 +50,14 @@ definitions:
       updated_at:
         type: string
     type: object
+  dto.ColorMode:
+    enum:
+    - color
+    - greyscale
+    type: string
+    x-enum-varnames:
+    - ColorModeColor
+    - ColorModeGreyscale
   dto.DownloadDocumentResponseBody:
     properties:
       id:
@@ -157,6 +163,45 @@ definitions:
       url:
         type: string
     type: object
+  dto.Orientation:
+    enum:
+    - portrait
+    - landscape
+    type: string
+    x-enum-varnames:
+    - OrientationPortrait
+    - OrientationLandscape
+  dto.PaperSize:
+    enum:
+    - a3
+    - a4
+    - a5
+    - a6
+    type: string
+    x-enum-varnames:
+    - PaperSizeA3
+    - PaperSizeA4
+    - PaperSizeA5
+    - PaperSizeA6
+  dto.PrintSettings:
+    properties:
+      color_mode:
+        $ref: '#/definitions/dto.ColorMode'
+      copies:
+        type: integer
+      double_sided:
+        type: boolean
+      orientation:
+        $ref: '#/definitions/dto.Orientation'
+      paper_size:
+        $ref: '#/definitions/dto.PaperSize'
+    required:
+    - color_mode
+    - copies
+    - double_sided
+    - orientation
+    - paper_size
+    type: object
   dto.PrinterResponseBody:
     properties:
       added_at:
@@ -165,10 +210,6 @@ definitions:
         type: integer
       id:
         type: integer
-      ip_address:
-        type: string
-      mac_address:
-        type: string
       manufacturer:
         type: string
       model:
@@ -176,6 +217,8 @@ definitions:
       serial_number:
         type: string
       updated_at:
+        type: string
+      uri:
         type: string
     type: object
   dto.PrinterStatusResponseBody:
@@ -198,6 +241,16 @@ definitions:
     required:
     - object_key
     - url
+    type: object
+  dto.SubmitPrintJobRequestBody:
+    properties:
+      document_id:
+        type: string
+      print_settings:
+        $ref: '#/definitions/dto.PrintSettings'
+    required:
+    - document_id
+    - print_settings
     type: object
   dto.UploadDocumentRequestBody:
     properties:
@@ -679,7 +732,7 @@ paths:
       - Bearer: []
       summary: Cancel Print Job
       tags:
-      - jobs
+      - print jobs
   /jobs/list:
     get:
       description: List Print Job
@@ -711,7 +764,7 @@ paths:
       - Bearer: []
       summary: List Print Job
       tags:
-      - jobs
+      - print jobs
   /jobs/monitor/{id}:
     get:
       description: View Print Job Status
@@ -749,12 +802,19 @@ paths:
       - Bearer: []
       summary: View Print Job Status
       tags:
-      - jobs
+      - print jobs
   /jobs/submit:
     post:
       consumes:
       - application/json
       description: Submit Print Job
+      parameters:
+      - description: Submit Print Job Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SubmitPrintJobRequestBody'
       produces:
       - application/json
       responses:
@@ -783,7 +843,7 @@ paths:
       - Bearer: []
       summary: Submit Print Job
       tags:
-      - jobs
+      - print jobs
   /oauth/callback:
     post:
       consumes:

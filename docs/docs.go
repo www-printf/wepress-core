@@ -652,7 +652,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "jobs"
+                    "print jobs"
                 ],
                 "summary": "Cancel Print Job",
                 "parameters": [
@@ -716,7 +716,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "jobs"
+                    "print jobs"
                 ],
                 "summary": "List Print Job",
                 "responses": {
@@ -771,7 +771,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "jobs"
+                    "print jobs"
                 ],
                 "summary": "View Print Job Status",
                 "parameters": [
@@ -838,9 +838,20 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "jobs"
+                    "print jobs"
                 ],
                 "summary": "Submit Print Job",
+                "parameters": [
+                    {
+                        "description": "Submit Print Job Request Body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SubmitPrintJobRequestBody"
+                        }
+                    }
+                ],
                 "responses": {
                     "201": {
                         "description": "Created",
@@ -1263,12 +1274,6 @@ const docTemplate = `{
                 "cluster_id": {
                     "type": "integer"
                 },
-                "ip_address": {
-                    "type": "string"
-                },
-                "mac_address": {
-                    "type": "string"
-                },
                 "manufacturer": {
                     "type": "string"
                 },
@@ -1279,6 +1284,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
+                    "type": "string"
+                },
+                "uri": {
                     "type": "string"
                 }
             }
@@ -1328,6 +1336,17 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "dto.ColorMode": {
+            "type": "string",
+            "enum": [
+                "color",
+                "greyscale"
+            ],
+            "x-enum-varnames": [
+                "ColorModeColor",
+                "ColorModeGreyscale"
+            ]
         },
         "dto.DownloadDocumentResponseBody": {
             "type": "object",
@@ -1481,6 +1500,59 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.Orientation": {
+            "type": "string",
+            "enum": [
+                "portrait",
+                "landscape"
+            ],
+            "x-enum-varnames": [
+                "OrientationPortrait",
+                "OrientationLandscape"
+            ]
+        },
+        "dto.PaperSize": {
+            "type": "string",
+            "enum": [
+                "a3",
+                "a4",
+                "a5",
+                "a6"
+            ],
+            "x-enum-varnames": [
+                "PaperSizeA3",
+                "PaperSizeA4",
+                "PaperSizeA5",
+                "PaperSizeA6"
+            ]
+        },
+        "dto.PrintSettings": {
+            "type": "object",
+            "required": [
+                "color_mode",
+                "copies",
+                "double_sided",
+                "orientation",
+                "paper_size"
+            ],
+            "properties": {
+                "color_mode": {
+                    "$ref": "#/definitions/dto.ColorMode"
+                },
+                "copies": {
+                    "type": "integer"
+                },
+                "double_sided": {
+                    "type": "boolean"
+                },
+                "orientation": {
+                    "$ref": "#/definitions/dto.Orientation"
+                },
+                "paper_size": {
+                    "$ref": "#/definitions/dto.PaperSize"
+                }
+            }
+        },
         "dto.PrinterResponseBody": {
             "type": "object",
             "properties": {
@@ -1493,12 +1565,6 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "ip_address": {
-                    "type": "string"
-                },
-                "mac_address": {
-                    "type": "string"
-                },
                 "manufacturer": {
                     "type": "string"
                 },
@@ -1509,6 +1575,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                },
+                "uri": {
                     "type": "string"
                 }
             }
@@ -1542,6 +1611,21 @@ const docTemplate = `{
                 },
                 "url": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.SubmitPrintJobRequestBody": {
+            "type": "object",
+            "required": [
+                "document_id",
+                "print_settings"
+            ],
+            "properties": {
+                "document_id": {
+                    "type": "string"
+                },
+                "print_settings": {
+                    "$ref": "#/definitions/dto.PrintSettings"
                 }
             }
         },

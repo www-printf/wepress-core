@@ -6,8 +6,7 @@ type PrinterResponseBody struct {
 	Manufacturer string `json:"manufacturer"`
 	Model        string `json:"model"`
 	SerialNumber string `json:"serial_number"`
-	IPAddress    string `json:"ip_address"`
-	MACAddress   string `json:"mac_address"`
+	URI          string `json:"uri"`
 	AddedAt      string `json:"added_at"`
 	UpdatedAt    string `json:"updated_at"`
 }

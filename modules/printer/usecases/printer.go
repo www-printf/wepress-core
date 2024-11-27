@@ -8,8 +8,10 @@ import (
 	"github.com/www-printf/wepress-core/modules/printer/domains"
 	"github.com/www-printf/wepress-core/modules/printer/dto"
 	"github.com/www-printf/wepress-core/modules/printer/repository"
+	"github.com/www-printf/wepress-core/pkg/clusters"
 	"github.com/www-printf/wepress-core/pkg/constants"
 	"github.com/www-printf/wepress-core/pkg/errors"
+	"github.com/www-printf/wepress-core/pkg/s3"
 )
 
 type PrinterUsecase interface {
@@ -18,17 +20,22 @@ type PrinterUsecase interface {
 	ListPrinter(ctx context.Context, clusterID uint) (*dto.ListPrinterResponseBody, *errors.HTTPError)
 	ViewStatus(ctx context.Context, printerID uint) (*dto.PrinterStatusResponseBody, *errors.HTTPError)
 	ListCluster(ctx context.Context) (*dto.ListClusterResponseBody, *errors.HTTPError)
+	SubmitPrintJob(ctx context.Context, req *dto.SubmitPrintJobRequestBody) (*dto.PrintJobResponseBody, *errors.HTTPError)
 }
 
 type printerUsecase struct {
-	printerRepo repository.PrinterRepository
-	redisClient *redis.Client
+	printerRepo    repository.PrinterRepository
+	redisClient    *redis.Client
+	clusterManager clusters.ClusterManager
+	s3Client       s3.S3Client
 }
 
-func NewPrinterUsecase(printerRepo repository.PrinterRepository, redisClient *redis.Client) PrinterUsecase {
+func NewPrinterUsecase(printerRepo repository.PrinterRepository, redisClient *redis.Client, clusterManager clusters.ClusterManager, s3Client s3.S3Client) PrinterUsecase {
 	return &printerUsecase{
-		printerRepo: printerRepo,
-		redisClient: redisClient,
+		printerRepo:    printerRepo,
+		redisClient:    redisClient,
+		clusterManager: clusterManager,
+		s3Client:       s3Client,
 	}
 }
 
@@ -38,8 +45,7 @@ func (u *printerUsecase) AddPrinter(ctx context.Context, req *dto.AddPrinterRequ
 		Manufacturer: req.Manufacturer,
 		Model:        req.Model,
 		SerialNumber: req.SerialNumber,
-		IPAddress:    req.IPAddress,
-		MACAddress:   req.MACAddress,
+		URI:          req.URI,
 	}
 	printer, err := u.printerRepo.Create(ctx, printer)
 	if err != nil {
@@ -51,8 +57,7 @@ func (u *printerUsecase) AddPrinter(ctx context.Context, req *dto.AddPrinterRequ
 		Manufacturer: printer.Manufacturer,
 		Model:        printer.Model,
 		SerialNumber: printer.SerialNumber,
-		IPAddress:    printer.IPAddress,
-		MACAddress:   printer.MACAddress,
+		URI:          printer.URI,
 		AddedAt:      printer.AddedAt.Format("2006-01-02 15:04:05"),
 		UpdatedAt:    printer.UpdatedAt.Format("2006-01-02 15:04:05"),
 	}, nil
@@ -69,8 +74,7 @@ func (u *printerUsecase) GetPrinter(ctx context.Context, printerID uint) (*dto.P
 		Manufacturer: printer.Manufacturer,
 		Model:        printer.Model,
 		SerialNumber: printer.SerialNumber,
-		IPAddress:    printer.IPAddress,
-		MACAddress:   printer.MACAddress,
+		URI:          printer.URI,
 		AddedAt:      printer.AddedAt.Format("2006-01-02 15:04:05"),
 		UpdatedAt:    printer.UpdatedAt.Format("2006-01-02 15:04:05"),
 	}, nil
@@ -89,8 +93,7 @@ func (u *printerUsecase) ListPrinter(ctx context.Context, clusterID uint) (*dto.
 			Manufacturer: printer.Manufacturer,
 			Model:        printer.Model,
 			SerialNumber: printer.SerialNumber,
-			IPAddress:    printer.IPAddress,
-			MACAddress:   printer.MACAddress,
+			URI:          printer.URI,
 			AddedAt:      printer.AddedAt.Format("2006-01-02 15:04:05"),
 			UpdatedAt:    printer.UpdatedAt.Format("2006-01-02 15:04:05"),
 		})

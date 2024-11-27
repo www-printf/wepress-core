@@ -32,7 +32,7 @@ func NewPrinterHandler(g *echo.Group, printerUC usecases.PrinterUsecase, middlew
 	cluster := g.Group("clusters")
 	cluster.GET("/list", wrapper.Wrap(h.ListCluster)).Name = "printer:list-cluster"
 
-	job := g.Group("jobs")
+	job := g.Group("print-jobs")
 	job.POST("/submit", wrapper.Wrap(h.SubmitPrintJob)).Name = "printer:submit-printjob"
 	job.DELETE("/cancel/:id", wrapper.Wrap(h.CancelPrintJob)).Name = "printer:cancel-printjob"
 	job.GET("/list", wrapper.Wrap(h.ListPrintJob)).Name = "printer:list-printjob"
@@ -177,9 +177,10 @@ func (h *PrinterHandler) ListCluster(c echo.Context) wrapper.Response {
 
 // @Summary Submit Print Job
 // @Description Submit Print Job
-// @Tags jobs
+// @Tags print jobs
 // @Accept json
 // @Produce json
+// @Param request body dto.SubmitPrintJobRequestBody true "Submit Print Job Request Body"
 // @Success      201  {object}  wrapper.SuccessResponse{data=nil}
 // @Failure      400  {object}  wrapper.FailResponse
 // @Failure      401  {object}  wrapper.FailResponse
@@ -187,12 +188,20 @@ func (h *PrinterHandler) ListCluster(c echo.Context) wrapper.Response {
 // @Security     Bearer
 // @Router       /jobs/submit [post]
 func (h *PrinterHandler) SubmitPrintJob(c echo.Context) wrapper.Response {
-	return wrapper.Response{Data: nil, Status: http.StatusCreated}
+	req := &dto.SubmitPrintJobRequestBody{}
+	if err := c.Bind(req); err != nil {
+		return wrapper.Response{Error: constants.HTTPBadRequest}
+	}
+	resp, err := h.printerUC.SubmitPrintJob(c.Request().Context(), req)
+	if err != nil {
+		return wrapper.Response{Error: err}
+	}
+	return wrapper.Response{Data: resp, Status: http.StatusCreated}
 }
 
 // @Summary Cancel Print Job
 // @Description Cancel Print Job
-// @Tags jobs
+// @Tags print jobs
 // @Produce json
 // @Param id path string true "Print Job ID"
 // @Success      200  {object}  wrapper.SuccessResponse{data=nil}
@@ -207,7 +216,7 @@ func (h *PrinterHandler) CancelPrintJob(c echo.Context) wrapper.Response {
 
 // @Summary List Print Job
 // @Description List Print Job
-// @Tags jobs
+// @Tags print jobs
 // @Produce json
 // @Success      200  {object}  wrapper.SuccessResponse{data=nil}
 // @Failure      400  {object}  wrapper.FailResponse
@@ -221,7 +230,7 @@ func (h *PrinterHandler) ListPrintJob(c echo.Context) wrapper.Response {
 
 // @Summary View Print Job Status
 // @Description View Print Job Status
-// @Tags jobs
+// @Tags print jobs
 // @Produce json
 // @Param id path string true "Print Job ID"
 // @Success      200  {object}  wrapper.SuccessResponse{data=nil}

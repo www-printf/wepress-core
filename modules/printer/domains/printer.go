@@ -10,6 +10,5 @@ type Printer struct {
 	Manufacturer string    `gorm:"column:manufacturer"`
 	Model        string    `gorm:"column:model"`
 	SerialNumber string    `gorm:"column:serial_number"`
-	IPAddress    string    `gorm:"column:ip_address"`
-	MACAddress   string    `gorm:"column:mac_address"`
+	URI          string    `gorm:"column:uri"`
 }

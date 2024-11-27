@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package printer;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "modules/printer/proto;proto";
+
+message PrintDocument {
+    string document_id = 1;
+    string name = 2;
+    bytes content = 3;
+    PrintSettings settings = 4;
+}
+  
+message PrintSettings {
+    enum ColorMode {
+        COLOR_MODE_COLOR_UNSPECIFIED = 0;
+        COLOR_MODE_COLOR = 1;
+        COLOR_MODE_GRAYSCALE = 2;
+    }
+  
+    enum PaperSize {
+        PAPER_SIZE_SIZE_UNSPECIFIED = 0;
+        PAPER_SIZE_A5 = 1;
+        PAPER_SIZE_A4 = 2;
+        PAPER_SIZE_A3 = 3;
+        PAPER_SIZE_A2 = 4;
+    }
+
+    enum Orientation {
+        ORIENTATION_UNSPECIFIED = 0;
+        ORIENTATION_PORTRAIT = 1;
+        ORIENTATION_LANDSCAPE = 2;
+    }
+
+    ColorMode color_mode = 1;
+    PaperSize paper_size = 2;
+    Orientation orientation = 3;
+    int32 copies = 4;
+    bool double_sided = 5;
+}
+
+message PrintJob {
+    string job_id = 1;
+    string document_id = 2;
+    google.protobuf.Timestamp submitted_at = 3;
+    JobStatus status = 4;
+    int32 pages_printed = 5;
+    int32 total_pages = 6;
+    int32 eta_seconds = 7;
+}
+
+enum JobStatus {
+    JOB_STATUS_UNSPECIFIED = 0;
+    JOB_STATUS_PENDING = 1;
+    JOB_STATUS_PROCESSING = 2;
+    JOB_STATUS_COMPLETED = 3;
+    JOB_STATUS_FAILED = 4;
+    JOB_STATUS_CANCELLED = 5;
+}

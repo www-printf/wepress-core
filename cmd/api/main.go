@@ -15,6 +15,7 @@ import (
 	"github.com/www-printf/wepress-core/cmd/api/di"
 	"github.com/www-printf/wepress-core/config"
 	_ "github.com/www-printf/wepress-core/docs"
+	"github.com/www-printf/wepress-core/pkg/clusters"
 )
 
 // @title WePress API
@@ -79,6 +80,7 @@ func main() {
 	<-quit
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+	container.Invoke(func(cm clusters.ClusterManager) { cm.Close() })
 	if err := e.Shutdown(ctx); err != nil {
 		log.Fatal().Msgf("Error when shutting down server: %v", err)
 	}

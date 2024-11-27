@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package printer;
+
+import "modules/printer/proto/print.proto";
+
+option go_package = "modules/printer/proto;proto";
+
+service VirtualPrinter {
+    rpc SubmitPrintJob(PrintDocument) returns (PrintJob) {}
+
+    rpc GetJobStatus(GetJobStatusRequest) returns (PrintJob) {}
+
+    rpc CancelPrintJob(CancelJobRequest) returns (PrintJob) {}
+
+    rpc MonitorPrintJob(GetJobStatusRequest) returns (stream PrintJob) {}
+
+    rpc ListPrintJobs(Empty) returns (ListPrintJobsResponse) {}
+
+    rpc ViewPrinterStatus(Empty) returns (PrinterStatus) {}
+}
+
+message GetJobStatusRequest {
+    string job_id = 1;
+}
+
+message CancelJobRequest {
+    string job_id = 1;
+}
+
+message ListPrintJobsResponse {
+    repeated PrintJob jobs = 1;
+}
+
+message PrinterStatus {
+    enum Status {
+        STATUS_UNSPECIFIED = 0;
+        STATUS_IDLE = 1;
+        STATUS_PRINTING = 2;
+        STATUS_ERROR = 3;   
+    }
+
+    Status status = 1;
+    PrintJob job = 2;
+}
+
+message Empty {
+}
