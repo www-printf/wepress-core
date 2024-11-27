@@ -99,6 +99,13 @@ definitions:
       total_clusters:
         type: integer
     type: object
+  dto.ListPrintJobResponseBody:
+    properties:
+      print_jobs:
+        items:
+          $ref: '#/definitions/dto.PrintJobResponseBody'
+        type: array
+    type: object
   dto.ListPrinterResponseBody:
     properties:
       printers:
@@ -236,12 +243,24 @@ definitions:
       uri:
         type: string
     type: object
+  dto.PrinterStatus:
+    enum:
+    - idle
+    - printing
+    - error
+    - unspecified
+    type: string
+    x-enum-varnames:
+    - PrinterStatusIdle
+    - PrinterStatusPrinting
+    - PrinterStatusError
+    - PrinterStatusUnspecified
   dto.PrinterStatusResponseBody:
     properties:
-      id:
-        type: integer
+      running_job:
+        $ref: '#/definitions/dto.PrintJobResponseBody'
       status:
-        type: string
+        $ref: '#/definitions/dto.PrinterStatus'
     type: object
   dto.RequestUploadResponseBody:
     properties:
@@ -713,155 +732,6 @@ paths:
       summary: Save Document
       tags:
       - documents
-  /jobs/cancel/{id}:
-    post:
-      description: Cancel Print Job
-      parameters:
-      - description: Print Job ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/wrapper.SuccessResponse'
-            - properties:
-                data:
-                  type: object
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/wrapper.FailResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/wrapper.FailResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/wrapper.FailResponse'
-      security:
-      - Bearer: []
-      summary: Cancel Print Job
-      tags:
-      - print jobs
-  /jobs/list:
-    get:
-      description: List Print Job
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/wrapper.SuccessResponse'
-            - properties:
-                data:
-                  type: object
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/wrapper.FailResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/wrapper.FailResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/wrapper.FailResponse'
-      security:
-      - Bearer: []
-      summary: List Print Job
-      tags:
-      - print jobs
-  /jobs/monitor/{id}:
-    get:
-      description: View Print Job Status
-      parameters:
-      - description: Print Job ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/wrapper.SuccessResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.PrintJobResponseBody'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/wrapper.FailResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/wrapper.FailResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/wrapper.FailResponse'
-      security:
-      - Bearer: []
-      summary: View Print Job Status
-      tags:
-      - print jobs
-  /jobs/submit:
-    post:
-      consumes:
-      - application/json
-      description: Submit Print Job
-      parameters:
-      - description: Submit Print Job Request Body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/dto.SubmitPrintJobRequestBody'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/wrapper.SuccessResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.PrintJobResponseBody'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/wrapper.FailResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/wrapper.FailResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/wrapper.FailResponse'
-      security:
-      - Bearer: []
-      summary: Submit Print Job
-      tags:
-      - print jobs
   /oauth/callback:
     post:
       consumes:
@@ -921,6 +791,161 @@ paths:
       summary: Request Oauth
       tags:
       - auth
+  /print-jobs/cancel/{id}:
+    post:
+      description: Cancel Print Job
+      parameters:
+      - description: Print Job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: Cancel Print Job
+      tags:
+      - print jobs
+  /print-jobs/list:
+    get:
+      description: List Print Jobs of a Printer
+      parameters:
+      - description: Printer ID
+        in: path
+        name: printerid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ListPrintJobResponseBody'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: List Print Jobs
+      tags:
+      - print jobs
+  /print-jobs/monitor/{id}:
+    get:
+      description: View Print Job Status
+      parameters:
+      - description: Print Job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PrintJobResponseBody'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: View Print Job Status
+      tags:
+      - print jobs
+  /print-jobs/submit:
+    post:
+      consumes:
+      - application/json
+      description: Submit Print Job
+      parameters:
+      - description: Submit Print Job Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SubmitPrintJobRequestBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PrintJobResponseBody'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: Submit Print Job
+      tags:
+      - print jobs
   /printers/add:
     post:
       consumes:

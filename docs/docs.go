@@ -640,258 +640,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/jobs/cancel/{id}": {
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Cancel Print Job",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "print jobs"
-                ],
-                "summary": "Cancel Print Job",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Print Job ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/wrapper.SuccessResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "object"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/wrapper.FailResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/wrapper.FailResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/wrapper.FailResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/jobs/list": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "List Print Job",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "print jobs"
-                ],
-                "summary": "List Print Job",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/wrapper.SuccessResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "object"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/wrapper.FailResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/wrapper.FailResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/wrapper.FailResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/jobs/monitor/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "View Print Job Status",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "print jobs"
-                ],
-                "summary": "View Print Job Status",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Print Job ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/wrapper.SuccessResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/dto.PrintJobResponseBody"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/wrapper.FailResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/wrapper.FailResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/wrapper.FailResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/jobs/submit": {
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Submit Print Job",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "print jobs"
-                ],
-                "summary": "Submit Print Job",
-                "parameters": [
-                    {
-                        "description": "Submit Print Job Request Body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.SubmitPrintJobRequestBody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/wrapper.SuccessResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/dto.PrintJobResponseBody"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/wrapper.FailResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/wrapper.FailResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/wrapper.FailResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/oauth/callback": {
             "post": {
                 "security": [
@@ -988,6 +736,267 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/print-jobs/cancel/{id}": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Cancel Print Job",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "print jobs"
+                ],
+                "summary": "Cancel Print Job",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Print Job ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/wrapper.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/print-jobs/list": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List Print Jobs of a Printer",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "print jobs"
+                ],
+                "summary": "List Print Jobs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Printer ID",
+                        "name": "printerid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/wrapper.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ListPrintJobResponseBody"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/print-jobs/monitor/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "View Print Job Status",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "print jobs"
+                ],
+                "summary": "View Print Job Status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Print Job ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/wrapper.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.PrintJobResponseBody"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/print-jobs/submit": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Submit Print Job",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "print jobs"
+                ],
+                "summary": "Submit Print Job",
+                "parameters": [
+                    {
+                        "description": "Submit Print Job Request Body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SubmitPrintJobRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/wrapper.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.PrintJobResponseBody"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/wrapper.FailResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/wrapper.FailResponse"
                         }
@@ -1409,6 +1418,17 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.ListPrintJobResponseBody": {
+            "type": "object",
+            "properties": {
+                "print_jobs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.PrintJobResponseBody"
+                    }
+                }
+            }
+        },
         "dto.ListPrinterResponseBody": {
             "type": "object",
             "properties": {
@@ -1605,14 +1625,29 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.PrinterStatus": {
+            "type": "string",
+            "enum": [
+                "idle",
+                "printing",
+                "error",
+                "unspecified"
+            ],
+            "x-enum-varnames": [
+                "PrinterStatusIdle",
+                "PrinterStatusPrinting",
+                "PrinterStatusError",
+                "PrinterStatusUnspecified"
+            ]
+        },
         "dto.PrinterStatusResponseBody": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "integer"
+                "running_job": {
+                    "$ref": "#/definitions/dto.PrintJobResponseBody"
                 },
                 "status": {
-                    "type": "string"
+                    "$ref": "#/definitions/dto.PrinterStatus"
                 }
             }
         },

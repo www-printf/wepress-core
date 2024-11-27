@@ -186,7 +186,7 @@ func (h *PrinterHandler) ListCluster(c echo.Context) wrapper.Response {
 // @Failure      401  {object}  wrapper.FailResponse
 // @Failure      500  {object}  wrapper.FailResponse
 // @Security     Bearer
-// @Router       /jobs/submit [post]
+// @Router       /print-jobs/submit [post]
 func (h *PrinterHandler) SubmitPrintJob(c echo.Context) wrapper.Response {
 	req := &dto.SubmitPrintJobRequestBody{}
 	if err := c.Bind(req); err != nil {
@@ -209,7 +209,7 @@ func (h *PrinterHandler) SubmitPrintJob(c echo.Context) wrapper.Response {
 // @Failure      401  {object}  wrapper.FailResponse
 // @Failure      500  {object}  wrapper.FailResponse
 // @Security     Bearer
-// @Router       /jobs/cancel/{id} [post]
+// @Router       /print-jobs/cancel/{id} [post]
 func (h *PrinterHandler) CancelPrintJob(c echo.Context) wrapper.Response {
 	id := c.Param("id")
 	if id == "" {
@@ -223,16 +223,17 @@ func (h *PrinterHandler) CancelPrintJob(c echo.Context) wrapper.Response {
 	return wrapper.Response{Data: nil, Status: http.StatusOK}
 }
 
-// @Summary List Print Job
-// @Description List Print Job
+// @Summary List Print Jobs
+// @Description List Print Jobs of a Printer
 // @Tags print jobs
 // @Produce json
-// @Success      200  {object}  wrapper.SuccessResponse{data=nil}
+// @Param printerid path string true "Printer ID"
+// @Success      200  {object}  wrapper.SuccessResponse{data=dto.ListPrintJobResponseBody}
 // @Failure      400  {object}  wrapper.FailResponse
 // @Failure      401  {object}  wrapper.FailResponse
 // @Failure      500  {object}  wrapper.FailResponse
 // @Security     Bearer
-// @Router       /jobs/list [get]
+// @Router       /print-jobs/list [get]
 func (h *PrinterHandler) ListPrintJob(c echo.Context) wrapper.Response {
 	printerIDStr := c.Param("printerid")
 	if printerIDStr == "" {
@@ -262,7 +263,7 @@ func (h *PrinterHandler) ListPrintJob(c echo.Context) wrapper.Response {
 // @Failure      401  {object}  wrapper.FailResponse
 // @Failure      500  {object}  wrapper.FailResponse
 // @Security     Bearer
-// @Router       /jobs/monitor/{id} [get]
+// @Router       /print-jobs/monitor/{id} [get]
 func (h *PrinterHandler) ViewJobStatus(c echo.Context) wrapper.Response {
 	id := c.Param("id")
 	if id == "" {
