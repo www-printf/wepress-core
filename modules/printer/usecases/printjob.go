@@ -81,3 +81,20 @@ func (u *printerUsecase) ViewJobStatus(ctx context.Context, jobID string) (*dto.
 		TotalPages:    resp.GetTotalPages(),
 	}, nil
 }
+
+func (u *printerUsecase) CancelPrintJob(ctx context.Context, jobID string) *errors.HTTPError {
+	history, err := u.printerRepo.GetPrintHistory(ctx, jobID)
+	if err != nil {
+		return constants.HTTPInternal
+	}
+	if history == nil {
+		return constants.HTTPNotFound
+	}
+
+	err = u.clusterManagers[history.ClusterID].CancelPrintJob(ctx, history.PrinterID, jobID)
+	if err != nil {
+		return constants.HTTPInternal
+	}
+
+	return nil
+}

@@ -34,7 +34,7 @@ func NewPrinterHandler(g *echo.Group, printerUC usecases.PrinterUsecase, middlew
 
 	job := g.Group("print-jobs")
 	job.POST("/submit", wrapper.Wrap(h.SubmitPrintJob)).Name = "printer:submit-printjob"
-	job.DELETE("/cancel/:id", wrapper.Wrap(h.CancelPrintJob)).Name = "printer:cancel-printjob"
+	job.POST("/cancel/:id", wrapper.Wrap(h.CancelPrintJob)).Name = "printer:cancel-printjob"
 	job.GET("/list", wrapper.Wrap(h.ListPrintJob)).Name = "printer:list-printjob"
 	job.GET("/monitor/:id", wrapper.Wrap(h.ViewJobStatus)).Name = "printer:view-printjob-status"
 }
@@ -209,8 +209,17 @@ func (h *PrinterHandler) SubmitPrintJob(c echo.Context) wrapper.Response {
 // @Failure      401  {object}  wrapper.FailResponse
 // @Failure      500  {object}  wrapper.FailResponse
 // @Security     Bearer
-// @Router       /jobs/cancel/{id} [delete]
+// @Router       /jobs/cancel/{id} [post]
 func (h *PrinterHandler) CancelPrintJob(c echo.Context) wrapper.Response {
+	id := c.Param("id")
+	if id == "" {
+		return wrapper.Response{Error: constants.HTTPBadRequest}
+	}
+
+	err := h.printerUC.CancelPrintJob(c.Request().Context(), id)
+	if err != nil {
+		return wrapper.Response{Error: err}
+	}
 	return wrapper.Response{Data: nil, Status: http.StatusOK}
 }
 

@@ -15,6 +15,7 @@ type ClusterManager interface {
 	AddPrinterClient(id uint, client proto.VirtualPrinterClient, conn *grpc.ClientConn)
 	SubmitPrintJob(ctx context.Context, reqJob *dto.PrintJobTranfer) (*proto.PrintJob, uint, error)
 	GetJobStatus(ctx context.Context, printerID uint, jobID string) (*proto.PrintJob, error)
+	CancelPrintJob(ctx context.Context, printerID uint, jobID string) error
 	Close()
 }
 
@@ -72,6 +73,15 @@ func (m *clusterManager) GetJobStatus(ctx context.Context, printerID uint, jobID
 		return nil, err
 	}
 	return resp, nil
+}
+
+func (m *clusterManager) CancelPrintJob(ctx context.Context, printerID uint, jobID string) error {
+	printer := m.printers[printerID]
+	_, err := printer.CancelPrintJob(ctx, &proto.CancelJobRequest{JobId: jobID})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (m *clusterManager) findBestPrinter(ctx context.Context) (uint, error) {
