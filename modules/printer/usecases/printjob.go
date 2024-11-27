@@ -14,10 +14,10 @@ func (u *printerUsecase) SubmitPrintJob(ctx context.Context, req *dto.SubmitPrin
 		return nil, constants.HTTPNotFound
 	}
 
-	// content, err := u.s3Client.DownloadObject(ctx, "", doc.ObjectKey)
-	// if err != nil {
-	// 	return nil, constants.HTTPInternal
-	// }
+	content, err := u.s3Client.DownloadObject(ctx, "", doc.ObjectKey)
+	if err != nil {
+		return nil, constants.HTTPInternal
+	}
 
 	reqJob := &dto.PrintJobTranfer{
 		DocumentID: req.DocumentID,
@@ -30,7 +30,7 @@ func (u *printerUsecase) SubmitPrintJob(ctx context.Context, req *dto.SubmitPrin
 		},
 		ClusterID: req.ClusterID,
 		Name:      doc.MetaData.Name,
-		Content:   []byte("test"),
+		Content:   content,
 	}
 	resp, err := u.clusterManager.SubmitPrintJob(ctx, reqJob)
 	if err != nil {
@@ -40,9 +40,9 @@ func (u *printerUsecase) SubmitPrintJob(ctx context.Context, req *dto.SubmitPrin
 	return &dto.PrintJobResponseBody{
 		ID:            resp.GetJobId(),
 		DocumentID:    resp.GetDocumentId(),
-		SubmittedAt:   resp.GetSubmittedAt().String(),
 		PagesPrinted:  resp.GetPagesPrinted(),
 		EstimatedTime: resp.GetEtaSeconds(),
 		JobStatus:     resp.GetStatus().String(),
+		TotalPages:    resp.GetTotalPages(),
 	}, nil
 }

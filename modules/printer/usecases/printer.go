@@ -111,24 +111,7 @@ func (u *printerUsecase) ListPrinter(ctx context.Context, clusterID uint) (*dto.
 }
 
 func (u *printerUsecase) ViewStatus(ctx context.Context, printerID uint) (*dto.PrinterStatusResponseBody, *errors.HTTPError) {
-	// status, err := u.redisClient.Get(ctx, strconv.FormatUint(uint64(printerID), 10)).Result()
-	// if err != nil && err != redis.Nil {
-	// 	log.Error().Err(err).Msg("1")
-	// 	return nil, constants.HTTPInternal
-	// }
-	// if err == redis.Nil {
-	// 	printer, err := u.printerRepo.GetByID(ctx, printerID)
-	// 	if err != nil {
-	// 		log.Error().Err(err).Msg("2")
-	// 		return nil, constants.HTTPInternal
-	// 	}
-	// 	status = printer.Status
-	// 	u.redisClient.Set(ctx, strconv.FormatUint(uint64(printerID), 10), status, 1*time.Hour)
-	// }
-	// return &dto.PrinterStatusResponseBody{
-	// 	ID:     printerID,
-	// 	Status: status,
-	// }, nil
+	
 	return nil, nil
 }
 
