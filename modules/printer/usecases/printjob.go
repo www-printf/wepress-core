@@ -32,7 +32,7 @@ func (u *printerUsecase) SubmitPrintJob(ctx context.Context, req *dto.SubmitPrin
 		Name:      doc.MetaData.Name,
 		Content:   content,
 	}
-	resp, err := u.clusterManager.SubmitPrintJob(ctx, reqJob)
+	resp, err := u.clusterManagers[req.ClusterID].SubmitPrintJob(ctx, reqJob)
 	if err != nil {
 		return nil, constants.HTTPInternal
 	}

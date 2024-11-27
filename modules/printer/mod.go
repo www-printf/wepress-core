@@ -8,7 +8,6 @@ import (
 	"github.com/www-printf/wepress-core/modules/printer/handlers"
 	"github.com/www-printf/wepress-core/modules/printer/repository"
 	"github.com/www-printf/wepress-core/modules/printer/usecases"
-	"github.com/www-printf/wepress-core/pkg/clusters"
 	"github.com/www-printf/wepress-core/pkg/middlewares"
 )
 
@@ -22,7 +21,6 @@ func (m *PrinterModule) RegisterRepositories(container *dig.Container) error {
 }
 
 func (m *PrinterModule) RegisterUseCases(container *dig.Container) error {
-	_ = container.Provide(clusters.NewClusterManager)
 	_ = container.Provide(usecases.NewPrinterUsecase)
 	return nil
 }

@@ -2,11 +2,15 @@ package usecases
 
 import (
 	"context"
+	"time"
 
 	"github.com/redis/go-redis/v9"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/www-printf/wepress-core/modules/printer/domains"
 	"github.com/www-printf/wepress-core/modules/printer/dto"
+	"github.com/www-printf/wepress-core/modules/printer/proto"
 	"github.com/www-printf/wepress-core/modules/printer/repository"
 	"github.com/www-printf/wepress-core/pkg/clusters"
 	"github.com/www-printf/wepress-core/pkg/constants"
@@ -21,22 +25,45 @@ type PrinterUsecase interface {
 	ViewStatus(ctx context.Context, printerID uint) (*dto.PrinterStatusResponseBody, *errors.HTTPError)
 	ListCluster(ctx context.Context) (*dto.ListClusterResponseBody, *errors.HTTPError)
 	SubmitPrintJob(ctx context.Context, req *dto.SubmitPrintJobRequestBody) (*dto.PrintJobResponseBody, *errors.HTTPError)
+	ClosePrinterClient()
 }
 
 type printerUsecase struct {
-	printerRepo    repository.PrinterRepository
-	redisClient    *redis.Client
-	clusterManager clusters.ClusterManager
-	s3Client       s3.S3Client
+	printerRepo     repository.PrinterRepository
+	redisClient     *redis.Client
+	clusterManagers map[uint]clusters.ClusterManager
+	s3Client        s3.S3Client
 }
 
-func NewPrinterUsecase(printerRepo repository.PrinterRepository, redisClient *redis.Client, clusterManager clusters.ClusterManager, s3Client s3.S3Client) PrinterUsecase {
-	return &printerUsecase{
-		printerRepo:    printerRepo,
-		redisClient:    redisClient,
-		clusterManager: clusterManager,
-		s3Client:       s3Client,
+func NewPrinterUsecase(printerRepo repository.PrinterRepository, redisClient *redis.Client, s3Client s3.S3Client) PrinterUsecase {
+	usecase := &printerUsecase{
+		printerRepo:     printerRepo,
+		redisClient:     redisClient,
+		clusterManagers: make(map[uint]clusters.ClusterManager),
+		s3Client:        s3Client,
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	clustersFromDB, err := printerRepo.ListCluster(ctx)
+	if err != nil {
+		return nil
+	}
+
+	for _, cluster := range clustersFromDB {
+		clusterMgr := clusters.NewClusterManager()
+		for _, printer := range cluster.Printers {
+			conn, client, err := newPrinterClient(printer.URI)
+			if err != nil {
+				continue
+			}
+			clusterMgr.AddPrinterClient(printer.ID, client, conn)
+		}
+		usecase.clusterManagers[cluster.ID] = clusterMgr
+	}
+
+	return usecase
 }
 
 func (u *printerUsecase) AddPrinter(ctx context.Context, req *dto.AddPrinterRequestBody) (*dto.PrinterResponseBody, *errors.HTTPError) {
@@ -111,7 +138,7 @@ func (u *printerUsecase) ListPrinter(ctx context.Context, clusterID uint) (*dto.
 }
 
 func (u *printerUsecase) ViewStatus(ctx context.Context, printerID uint) (*dto.PrinterStatusResponseBody, *errors.HTTPError) {
-	
+
 	return nil, nil
 }
 
@@ -143,4 +170,20 @@ func (u *printerUsecase) ListCluster(ctx context.Context) (*dto.ListClusterRespo
 		Clusters: clusterReponses,
 		Total:    int64(len(clusters)),
 	}, nil
+}
+
+func (u *printerUsecase) ClosePrinterClient() {
+	for _, clusterMgr := range u.clusterManagers {
+		clusterMgr.Close()
+	}
+}
+
+func newPrinterClient(uri string) (*grpc.ClientConn, proto.VirtualPrinterClient, error) {
+	conn, err := grpc.NewClient(uri, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	client := proto.NewVirtualPrinterClient(conn)
+	return conn, client, nil
 }

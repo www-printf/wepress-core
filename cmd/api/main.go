@@ -15,7 +15,7 @@ import (
 	"github.com/www-printf/wepress-core/cmd/api/di"
 	"github.com/www-printf/wepress-core/config"
 	_ "github.com/www-printf/wepress-core/docs"
-	"github.com/www-printf/wepress-core/pkg/clusters"
+	"github.com/www-printf/wepress-core/modules/printer/usecases"
 )
 
 // @title WePress API
@@ -80,7 +80,7 @@ func main() {
 	<-quit
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	container.Invoke(func(cm clusters.ClusterManager) { cm.Close() })
+	container.Invoke(func(printerUC usecases.PrinterUsecase) { printerUC.ClosePrinterClient() })
 	if err := e.Shutdown(ctx); err != nil {
 		log.Fatal().Msgf("Error when shutting down server: %v", err)
 	}
