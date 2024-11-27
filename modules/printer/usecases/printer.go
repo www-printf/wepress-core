@@ -25,6 +25,7 @@ type PrinterUsecase interface {
 	ViewStatus(ctx context.Context, printerID uint) (*dto.PrinterStatusResponseBody, *errors.HTTPError)
 	ListCluster(ctx context.Context) (*dto.ListClusterResponseBody, *errors.HTTPError)
 	SubmitPrintJob(ctx context.Context, req *dto.SubmitPrintJobRequestBody) (*dto.PrintJobResponseBody, *errors.HTTPError)
+	ViewJobStatus(ctx context.Context, jobID string) (*dto.PrintJobResponseBody, *errors.HTTPError)
 	ClosePrinterClient()
 }
 

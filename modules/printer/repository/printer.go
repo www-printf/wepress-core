@@ -18,6 +18,8 @@ type PrinterRepository interface {
 	ListCluster(ctx context.Context) ([]domains.Cluster, error)
 	GetClusterByID(ctx context.Context, id uint) (*domains.Cluster, error)
 	GetDocument(ctx context.Context, docID string) (*doc.Document, error)
+	AddPrintHistory(ctx context.Context, history *domains.PrintHistory) error
+	GetPrintHistory(ctx context.Context, jobID string) (*domains.PrintHistory, error)
 }
 
 type printerRepository struct {
@@ -108,4 +110,25 @@ func (r *printerRepository) GetDocument(ctx context.Context, docID string) (*doc
 		}
 	}
 	return &doc, nil
+}
+
+func (r *printerRepository) AddPrintHistory(ctx context.Context, history *domains.PrintHistory) error {
+	err := r.db.WithContext(ctx).Create(history).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *printerRepository) GetPrintHistory(ctx context.Context, jobID string) (*domains.PrintHistory, error) {
+	var history domains.PrintHistory
+	err := r.db.WithContext(ctx).First(&history, "job_id = ?", jobID).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		} else {
+			return nil, err
+		}
+	}
+	return &history, nil
 }

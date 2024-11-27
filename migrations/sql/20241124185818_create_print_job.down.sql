@@ -1,1 +1,1 @@
--- DROP TABLE IF EXISTS print_jobs;
+DROP TABLE IF EXISTS print_histories;

@@ -181,7 +181,7 @@ func (h *PrinterHandler) ListCluster(c echo.Context) wrapper.Response {
 // @Accept json
 // @Produce json
 // @Param request body dto.SubmitPrintJobRequestBody true "Submit Print Job Request Body"
-// @Success      201  {object}  wrapper.SuccessResponse{data=nil}
+// @Success      201  {object}  wrapper.SuccessResponse{data=dto.PrintJobResponseBody}
 // @Failure      400  {object}  wrapper.FailResponse
 // @Failure      401  {object}  wrapper.FailResponse
 // @Failure      500  {object}  wrapper.FailResponse
@@ -233,12 +233,22 @@ func (h *PrinterHandler) ListPrintJob(c echo.Context) wrapper.Response {
 // @Tags print jobs
 // @Produce json
 // @Param id path string true "Print Job ID"
-// @Success      200  {object}  wrapper.SuccessResponse{data=nil}
+// @Success      200  {object}  wrapper.SuccessResponse{data=dto.PrintJobResponseBody}
 // @Failure      400  {object}  wrapper.FailResponse
 // @Failure      401  {object}  wrapper.FailResponse
 // @Failure      500  {object}  wrapper.FailResponse
 // @Security     Bearer
 // @Router       /jobs/monitor/{id} [get]
 func (h *PrinterHandler) ViewJobStatus(c echo.Context) wrapper.Response {
-	return wrapper.Response{Data: nil, Status: http.StatusOK}
+	id := c.Param("id")
+	if id == "" {
+		return wrapper.Response{Error: constants.HTTPBadRequest}
+	}
+
+	resp, err := h.printerUC.ViewJobStatus(c.Request().Context(), id)
+	if err != nil {
+		return wrapper.Response{Error: err}
+	}
+
+	return wrapper.Response{Data: resp, Status: http.StatusOK}
 }

@@ -1,10 +1,10 @@
 package domains
 
-import "time"
+import "github.com/google/uuid"
 
-type PrintJob struct {
-	ID          string    `gorm:"primaryKey"`
-	DocumentID  string    `gorm:"not null"`
-	SubmittedAt time.Time `gorm:"not null"`
-	TotalPages  int       `gorm:"not null"`
+type PrintHistory struct {
+	ID        uuid.UUID `gorm:"column:id;primaryKey"`
+	JobID     string    `gorm:"column:job_id"`
+	PrinterID uint      `gorm:"column:printer_id"`
+	ClusterID uint      `gorm:"column:cluster_id"`
 }

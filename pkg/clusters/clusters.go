@@ -13,7 +13,8 @@ import (
 
 type ClusterManager interface {
 	AddPrinterClient(id uint, client proto.VirtualPrinterClient, conn *grpc.ClientConn)
-	SubmitPrintJob(ctx context.Context, reqJob *dto.PrintJobTranfer) (*proto.PrintJob, error)
+	SubmitPrintJob(ctx context.Context, reqJob *dto.PrintJobTranfer) (*proto.PrintJob, uint, error)
+	GetJobStatus(ctx context.Context, printerID uint, jobID string) (*proto.PrintJob, error)
 	Close()
 }
 
@@ -40,10 +41,10 @@ func (m *clusterManager) Close() {
 	}
 }
 
-func (m *clusterManager) SubmitPrintJob(ctx context.Context, reqJob *dto.PrintJobTranfer) (*proto.PrintJob, error) {
+func (m *clusterManager) SubmitPrintJob(ctx context.Context, reqJob *dto.PrintJobTranfer) (*proto.PrintJob, uint, error) {
 	bestPrinter, err := m.findBestPrinter(ctx)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	printer := m.printers[bestPrinter]
 	resp, err := printer.SubmitPrintJob(ctx, &proto.PrintDocument{
@@ -57,6 +58,16 @@ func (m *clusterManager) SubmitPrintJob(ctx context.Context, reqJob *dto.PrintJo
 			Copies:      reqJob.PrintSettings.Copies,
 			DoubleSided: reqJob.PrintSettings.DoubleSided,
 		}})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return resp, bestPrinter, nil
+}
+
+func (m *clusterManager) GetJobStatus(ctx context.Context, printerID uint, jobID string) (*proto.PrintJob, error) {
+	printer := m.printers[printerID]
+	resp, err := printer.GetJobStatus(ctx, &proto.GetJobStatusRequest{JobId: jobID})
 	if err != nil {
 		return nil, err
 	}
