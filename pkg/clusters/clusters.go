@@ -17,6 +17,7 @@ type ClusterManager interface {
 	GetJobStatus(ctx context.Context, printerID uint, jobID string) (*proto.PrintJob, error)
 	CancelPrintJob(ctx context.Context, printerID uint, jobID string) error
 	ListPrintJobs(ctx context.Context, printerID uint) (*proto.ListPrintJobsResponse, error)
+	ViewPrinterStatus(ctx context.Context, printerID uint) (*proto.PrinterStatus, error)
 	Close()
 }
 
@@ -88,6 +89,15 @@ func (m *clusterManager) CancelPrintJob(ctx context.Context, printerID uint, job
 func (m *clusterManager) ListPrintJobs(ctx context.Context, printerID uint) (*proto.ListPrintJobsResponse, error) {
 	printer := m.printers[printerID]
 	resp, err := printer.ListPrintJobs(ctx, &proto.Empty{})
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (m *clusterManager) ViewPrinterStatus(ctx context.Context, printerID uint) (*proto.PrinterStatus, error) {
+	printer := m.printers[printerID]
+	resp, err := printer.ViewPrinterStatus(ctx, &proto.Empty{})
 	if err != nil {
 		return nil, err
 	}

@@ -17,6 +17,15 @@ type ListPrinterResponseBody struct {
 }
 
 type PrinterStatusResponseBody struct {
-	ID     uint   `json:"id"`
-	Status string `json:"status"`
+	Status PrinterStatus         `json:"status"`
+	Job    *PrintJobResponseBody `json:"running_job"`
 }
+
+type PrinterStatus string
+
+const (
+	PrinterStatusIdle        PrinterStatus = "idle"
+	PrinterStatusPrinting    PrinterStatus = "printing"
+	PrinterStatusError       PrinterStatus = "error"
+	PrinterStatusUnspecified PrinterStatus = "unspecified"
+)

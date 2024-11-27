@@ -22,7 +22,7 @@ type PrinterUsecase interface {
 	AddPrinter(ctx context.Context, req *dto.AddPrinterRequestBody) (*dto.PrinterResponseBody, *errors.HTTPError)
 	GetPrinter(ctx context.Context, printerID uint) (*dto.PrinterResponseBody, *errors.HTTPError)
 	ListPrinter(ctx context.Context, clusterID uint) (*dto.ListPrinterResponseBody, *errors.HTTPError)
-	ViewStatus(ctx context.Context, printerID uint) (*dto.PrinterStatusResponseBody, *errors.HTTPError)
+	ViewPrinterStatus(ctx context.Context, printerID uint) (*dto.PrinterStatusResponseBody, *errors.HTTPError)
 	ListCluster(ctx context.Context) (*dto.ListClusterResponseBody, *errors.HTTPError)
 	SubmitPrintJob(ctx context.Context, req *dto.SubmitPrintJobRequestBody) (*dto.PrintJobResponseBody, *errors.HTTPError)
 	ViewJobStatus(ctx context.Context, jobID string) (*dto.PrintJobResponseBody, *errors.HTTPError)
@@ -140,9 +140,33 @@ func (u *printerUsecase) ListPrinter(ctx context.Context, clusterID uint) (*dto.
 	}, nil
 }
 
-func (u *printerUsecase) ViewStatus(ctx context.Context, printerID uint) (*dto.PrinterStatusResponseBody, *errors.HTTPError) {
+func (u *printerUsecase) ViewPrinterStatus(ctx context.Context, printerID uint) (*dto.PrinterStatusResponseBody, *errors.HTTPError) {
+	clusterID, err := u.printerRepo.GetClusterIDByPrinterID(ctx, printerID)
+	if err != nil {
+		return nil, constants.HTTPInternal
+	}
 
-	return nil, nil
+	pstatus, err := u.clusterManagers[clusterID].ViewPrinterStatus(ctx, printerID)
+	if err != nil {
+		return nil, constants.HTTPInternal
+	}
+
+	resp := &dto.PrinterStatusResponseBody{
+		Status: dto.PrinterStatus(pstatus.String()),
+		Job:    nil,
+	}
+	if pstatus.GetJob() != nil {
+		resp.Job = &dto.PrintJobResponseBody{
+			ID:            pstatus.GetJob().GetJobId(),
+			DocumentID:    pstatus.GetJob().GetDocumentId(),
+			PagesPrinted:  pstatus.GetJob().GetPagesPrinted(),
+			EstimatedTime: pstatus.GetJob().GetEtaSeconds(),
+			JobStatus:     pstatus.GetJob().GetStatus().String(),
+			TotalPages:    pstatus.GetJob().GetTotalPages(),
+		}
+	}
+
+	return resp, nil
 }
 
 func (u *printerUsecase) ListCluster(ctx context.Context) (*dto.ListClusterResponseBody, *errors.HTTPError) {

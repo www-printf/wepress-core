@@ -27,7 +27,7 @@ func NewPrinterHandler(g *echo.Group, printerUC usecases.PrinterUsecase, middlew
 	printer.POST("/add", wrapper.Wrap(h.AddPrinter)).Name = "printer:add-printer"
 	printer.GET("/list", wrapper.Wrap(h.ListPrinter)).Name = "printer:list-printer"
 	printer.GET("/info/:id", wrapper.Wrap(h.GetPrinter)).Name = "printer:view-info"
-	printer.GET("/monitor/:id", wrapper.Wrap(h.ViewStatus)).Name = "printer:view-status"
+	printer.GET("/monitor/:id", wrapper.Wrap(h.ViewPrinterStatus)).Name = "printer:view-status"
 
 	cluster := g.Group("clusters")
 	cluster.GET("/list", wrapper.Wrap(h.ListCluster)).Name = "printer:list-cluster"
@@ -137,7 +137,7 @@ func (h *PrinterHandler) GetPrinter(c echo.Context) wrapper.Response {
 // @Failure      500  {object}  wrapper.FailResponse
 // @Security     Bearer
 // @Router       /printers/monitor/{id} [get]
-func (h *PrinterHandler) ViewStatus(c echo.Context) wrapper.Response {
+func (h *PrinterHandler) ViewPrinterStatus(c echo.Context) wrapper.Response {
 	idStr := c.Param("id")
 	if idStr == "" {
 		return wrapper.Response{Error: constants.HTTPBadRequest}
@@ -148,7 +148,7 @@ func (h *PrinterHandler) ViewStatus(c echo.Context) wrapper.Response {
 		return wrapper.Response{Error: constants.HTTPBadRequest}
 	}
 
-	resp, erro := h.printerUC.ViewStatus(c.Request().Context(), uint(id))
+	resp, erro := h.printerUC.ViewPrinterStatus(c.Request().Context(), uint(id))
 	if erro != nil {
 		return wrapper.Response{Error: erro}
 	}
