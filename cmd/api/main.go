@@ -49,6 +49,7 @@ func main() {
 	e.Use(middleware.LoggerWithConfig(config.GetEchoLogConfig(&cfg.AppConfig)))
 	e.Use(middleware.Recover())
 	e.Use(middleware.RequestID())
+	e.Use(middleware.CORSWithConfig(cfg.AppConfig.CORSConfig))
 	e.HideBanner = true
 	e.Validator = cfg.AppConfig.Validator
 
