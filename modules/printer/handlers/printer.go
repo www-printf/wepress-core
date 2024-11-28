@@ -24,19 +24,21 @@ func NewPrinterHandler(g *echo.Group, printerUC usecases.PrinterUsecase, middlew
 	printer := g.Group("printers")
 	printer.Use(middlewareMngr.Auth())
 
-	printer.POST("/add", wrapper.Wrap(h.AddPrinter)).Name = "printer:add-printer"
-	printer.GET("/list", wrapper.Wrap(h.ListPrinter)).Name = "printer:list-printer"
-	printer.GET("/info/:id", wrapper.Wrap(h.GetPrinter)).Name = "printer:view-info"
-	printer.GET("/monitor/:id", wrapper.Wrap(h.ViewPrinterStatus)).Name = "printer:view-status"
+	printer.POST("/add", wrapper.Wrap(h.AddPrinter), middlewareMngr.Permission("spso")).Name = "printer:add-printer"
+	printer.GET("/list", wrapper.Wrap(h.ListPrinter), middlewareMngr.Permission()).Name = "printer:list-printer"
+	printer.GET("/info/:id", wrapper.Wrap(h.GetPrinter), middlewareMngr.Permission()).Name = "printer:view-info"
+	printer.GET("/monitor/:id", wrapper.Wrap(h.ViewPrinterStatus), middlewareMngr.Permission()).Name = "printer:view-status"
 
 	cluster := g.Group("clusters")
-	cluster.GET("/list", wrapper.Wrap(h.ListCluster)).Name = "printer:list-cluster"
+	cluster.Use(middlewareMngr.Auth())
+	cluster.GET("/list", wrapper.Wrap(h.ListCluster), middlewareMngr.Permission()).Name = "printer:list-cluster"
 
 	job := g.Group("print-jobs")
-	job.POST("/submit", wrapper.Wrap(h.SubmitPrintJob)).Name = "printer:submit-printjob"
-	job.POST("/cancel/:id", wrapper.Wrap(h.CancelPrintJob)).Name = "printer:cancel-printjob"
-	job.GET("/list/:printerid", wrapper.Wrap(h.ListPrintJob)).Name = "printer:list-printjob"
-	job.GET("/monitor/:id", wrapper.Wrap(h.ViewJobStatus)).Name = "printer:view-printjob-status"
+	job.Use(middlewareMngr.Auth())
+	job.POST("/submit", wrapper.Wrap(h.SubmitPrintJob), middlewareMngr.Permission()).Name = "printer:submit-printjob"
+	job.POST("/cancel/:id", wrapper.Wrap(h.CancelPrintJob), middlewareMngr.Permission()).Name = "printer:cancel-printjob"
+	job.GET("/list/:printerid", wrapper.Wrap(h.ListPrintJob), middlewareMngr.Permission("spso")).Name = "printer:list-printjob"
+	job.GET("/monitor/:id", wrapper.Wrap(h.ViewJobStatus), middlewareMngr.Permission()).Name = "printer:view-printjob-status"
 }
 
 // @Summary Add Printer

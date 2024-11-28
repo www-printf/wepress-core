@@ -18,6 +18,7 @@ definitions:
       status:
         type: string
       uri:
+        example: localhost:50001
         type: string
     type: object
   dto.AuthResponseBody:
@@ -60,17 +61,25 @@ definitions:
     - ColorModeGreyscale
   dto.DownloadDocumentResponseBody:
     properties:
+      created_at:
+        example: "2021-08-01T00:00:00Z"
+        type: string
       id:
         example: d2728e88-aef1-4822-976a-63bdca2e89f9
         type: string
       metadata:
         $ref: '#/definitions/dto.MetaDataBody'
+      updated_at:
+        example: "2021-08-01T00:00:00Z"
+        type: string
       url:
         example: https://bucket.s3-endpoint/object-key
         type: string
     required:
+    - created_at
     - id
     - metadata
+    - updated_at
     - url
     type: object
   dto.DownloadDocumentsResponseBody:
@@ -732,6 +741,32 @@ paths:
       summary: Save Document
       tags:
       - documents
+  /oauth/{provider}:
+    get:
+      consumes:
+      - application/json
+      description: Request Oauth
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/wrapper.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.OauthResponseBody'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/wrapper.FailResponse'
+      security:
+      - Bearer: []
+      summary: Request Oauth
+      tags:
+      - auth
   /oauth/callback:
     post:
       consumes:
@@ -763,32 +798,6 @@ paths:
       security:
       - Bearer: []
       summary: Oauth Callback
-      tags:
-      - auth
-  /oauth/login:
-    get:
-      consumes:
-      - application/json
-      description: Request Oauth
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/wrapper.SuccessResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.OauthResponseBody'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/wrapper.FailResponse'
-      security:
-      - Bearer: []
-      summary: Request Oauth
       tags:
       - auth
   /print-jobs/cancel/{id}:
