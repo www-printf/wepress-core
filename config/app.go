@@ -31,6 +31,8 @@ type AppConfig struct {
 	Issuer      string `env:"JWT_ISS" envDefault:"wepress"`
 	TokenExpire int64  `env:"JWT_EXPIRE" envDefault:"86400"`
 
+	AllowedRoles []string `env:"ALLOWED_ROLES" envDefault:"user,spso" envSeparator:","`
+
 	S3Config S3Config
 
 	OauthConfig OauthConfig

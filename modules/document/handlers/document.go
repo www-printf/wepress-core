@@ -24,10 +24,10 @@ func NewDocumentHandler(g *echo.Group, documentUC usecases.DocumentUsecase, midd
 	api := g.Group("documents")
 	api.Use(middlewareMngr.Auth())
 
-	api.POST("/upload", wrapper.Wrap(h.SaveDocument)).Name = "document:save-document"
-	api.POST("/request-upload", wrapper.Wrap(h.RequestUpload)).Name = "document:generate-signed-url-for-upload"
-	api.GET("/download", wrapper.Wrap(h.DownloadDocumentList)).Name = "document:download-document-list"
-	api.GET("/download/:id", wrapper.Wrap(h.DownloadDocument)).Name = "document:download-document"
+	api.POST("/upload", wrapper.Wrap(h.SaveDocument), middlewareMngr.Permission()).Name = "document:save-document"
+	api.POST("/request-upload", wrapper.Wrap(h.RequestUpload), middlewareMngr.Permission()).Name = "document:generate-signed-url-for-upload"
+	api.GET("/download", wrapper.Wrap(h.DownloadDocumentList), middlewareMngr.Permission()).Name = "document:download-document-list"
+	api.GET("/download/:id", wrapper.Wrap(h.DownloadDocument), middlewareMngr.Permission()).Name = "document:download-document"
 }
 
 // @Summary Request Upload Document

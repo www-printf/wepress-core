@@ -15,4 +15,5 @@ type User struct {
 	UpdatedAt time.Time
 	PrivKey   string `gorm:"not null;column:privkey"`
 	PubKey    string `gorm:"not null;column:pubkey"`
+	Role      string `gorm:"not null;column:role"`
 }

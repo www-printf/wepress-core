@@ -133,7 +133,7 @@ func (h *AuthHandler) Profile(c echo.Context) wrapper.Response {
 // @Success      200  {object}  wrapper.SuccessResponse{data=dto.OauthResponseBody}
 // @Failure      401  {object}  wrapper.FailResponse
 // @Security     Bearer
-// @Router       /oauth/login [get]
+// @Router       /oauth/{provider} [get]
 func (h *AuthHandler) RequestOauth(c echo.Context) wrapper.Response {
 	provider := c.Param("provider")
 	urlResp, err := h.authUC.InitiateOAuth(c.Request().Context(), provider)

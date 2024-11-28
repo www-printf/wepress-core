@@ -697,7 +697,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/oauth/login": {
+        "/oauth/{provider}": {
             "get": {
                 "security": [
                     {
@@ -1296,7 +1296,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uri": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "localhost:50001"
                 }
             }
         },
@@ -1360,17 +1361,27 @@ const docTemplate = `{
         "dto.DownloadDocumentResponseBody": {
             "type": "object",
             "required": [
+                "created_at",
                 "id",
                 "metadata",
+                "updated_at",
                 "url"
             ],
             "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2021-08-01T00:00:00Z"
+                },
                 "id": {
                     "type": "string",
                     "example": "d2728e88-aef1-4822-976a-63bdca2e89f9"
                 },
                 "metadata": {
                     "$ref": "#/definitions/dto.MetaDataBody"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "example": "2021-08-01T00:00:00Z"
                 },
                 "url": {
                     "type": "string",

@@ -55,6 +55,9 @@ func (u *authUsecase) UserLogin(
 	if err != nil {
 		return nil, constants.HTTPUnauthorized
 	}
+	if user == nil {
+		return nil, constants.HTTPBadRequest
+	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
 	if err != nil {
@@ -77,7 +80,8 @@ func (u *authUsecase) UserLogin(
 		return nil, constants.HTTPInternal
 	}
 	claims := jwtLib.MapClaims{
-		"uid": user.ID.String(),
+		"uid":  user.ID.String(),
+		"role": user.Role,
 	}
 	token, err := u.tokenManger.Generate(claims, ed25519.PrivateKey(privKeyBytes))
 	if err != nil {
@@ -244,6 +248,7 @@ func (u *authUsecase) HandleOAuthCallback(
 			Password: password,
 			PubKey:   keyPair["pubkey"],
 			PrivKey:  keyPair["privkey"],
+			Role:     "user",
 		}
 		err = u.authRepo.InsertUser(ctx, user)
 		if err != nil {
@@ -256,7 +261,8 @@ func (u *authUsecase) HandleOAuthCallback(
 		return nil, constants.HTTPInternal
 	}
 	claims := jwtLib.MapClaims{
-		"uid": user.ID.String(),
+		"uid":  user.ID.String(),
+		"role": user.Role,
 	}
 	token, err := u.tokenManger.Generate(claims, ed25519.PrivateKey(privKeyBytes))
 	if err != nil {
