@@ -7,7 +7,7 @@ import "modules/printer/proto/print.proto";
 option go_package = "modules/printer/proto;proto";
 
 service VirtualPrinter {
-    rpc SubmitPrintJob(PrintDocument) returns (PrintJob) {}
+    rpc SubmitPrintJob(PrintDocument) returns (ListPrintJobsResponse) {}
 
     rpc GetJobStatus(GetJobStatusRequest) returns (PrintJob) {}
 

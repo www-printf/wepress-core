@@ -6,4 +6,5 @@ type UserResponseBody struct {
 	Email     string `json:"email"`
 	CreatedAt string `json:"created_at"`
 	PubKey    string `json:"pubkey"`
+	Role      string `json:"role"`
 }

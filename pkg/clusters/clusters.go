@@ -13,7 +13,7 @@ import (
 
 type ClusterManager interface {
 	AddPrinterClient(id uint, client proto.VirtualPrinterClient, conn *grpc.ClientConn)
-	SubmitPrintJob(ctx context.Context, reqJob *dto.PrintJobTranfer) (*proto.PrintJob, uint, error)
+	SubmitPrintJob(ctx context.Context, reqJob *dto.PrintJobTranfer) (*proto.ListPrintJobsResponse, uint, error)
 	GetJobStatus(ctx context.Context, printerID uint, jobID string) (*proto.PrintJob, error)
 	CancelPrintJob(ctx context.Context, printerID uint, jobID string) error
 	ListPrintJobs(ctx context.Context, printerID uint) (*proto.ListPrintJobsResponse, error)
@@ -44,7 +44,7 @@ func (m *clusterManager) Close() {
 	}
 }
 
-func (m *clusterManager) SubmitPrintJob(ctx context.Context, reqJob *dto.PrintJobTranfer) (*proto.PrintJob, uint, error) {
+func (m *clusterManager) SubmitPrintJob(ctx context.Context, reqJob *dto.PrintJobTranfer) (*proto.ListPrintJobsResponse, uint, error) {
 	bestPrinter, err := m.findBestPrinter(ctx)
 	if err != nil {
 		return nil, 0, err

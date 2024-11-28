@@ -10,6 +10,7 @@ type SessionUser struct {
 	Email     string    `redis:"Email"`
 	CreatedAt time.Time `redis:"CreatedAt"`
 	PubKey    string    `redis:"PubKey"`
+	Role      string    `redis:"Role"`
 }
 
 func (s *SessionUser) MarshalBinary() ([]byte, error) {
