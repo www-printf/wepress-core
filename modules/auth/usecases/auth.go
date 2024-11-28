@@ -52,11 +52,8 @@ func NewAuthUsecase(authRepo repository.AuthRepository, tokenMng jwt.TokenManage
 func (u *authUsecase) UserLogin(
 	ctx context.Context, req *dto.LoginRequestBody) (*dto.AuthResponseBody, *errors.HTTPError) {
 	user, err := u.authRepo.GetUserByEmail(ctx, req.Email)
-	if err != nil {
+	if err != nil || user == nil {
 		return nil, constants.HTTPUnauthorized
-	}
-	if user == nil {
-		return nil, constants.HTTPBadRequest
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
@@ -122,7 +119,7 @@ func (u *authUsecase) ValidateToken(
 	if err != nil {
 		user, err := u.authRepo.GetUserByID(ctx, uid)
 		if err != nil {
-			return nil, constants.HTTPNotFound
+			return nil, constants.HTTPUnauthorized
 		}
 		pubKeyStr = user.PubKey
 	} else {
