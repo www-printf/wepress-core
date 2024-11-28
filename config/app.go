@@ -1,6 +1,7 @@
 package config
 
 import (
+	"net/http"
 	"os"
 	"strings"
 
@@ -74,6 +75,19 @@ func InitConfig() (*Config, error) {
 
 	cfg.AppConfig.CORSConfig = middleware.CORSConfig{
 		AllowOrigins: AllowOrigins,
+		AllowMethods: []string{
+			http.MethodGet,
+			http.MethodPost,
+			http.MethodPut,
+			http.MethodDelete,
+			http.MethodOptions,
+		},
+		AllowHeaders: []string{
+			echo.HeaderOrigin,
+			echo.HeaderContentType,
+			echo.HeaderAccept,
+			echo.HeaderAuthorization,
+		},
 	}
 
 	return &cfg, nil
