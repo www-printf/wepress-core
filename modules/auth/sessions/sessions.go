@@ -29,6 +29,7 @@ func (s *sessionStorage) SetUserSession(ctx context.Context, uid string, session
 		"Email":     session.Email,
 		"CreatedAt": session.CreatedAt.Format(time.RFC3339Nano),
 		"PubKey":    session.PubKey,
+		"Role":      session.Role,
 	}
 
 	err := s.redisClient.HSet(ctx, uid, fields).Err()

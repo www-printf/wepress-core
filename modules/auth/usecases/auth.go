@@ -90,6 +90,7 @@ func (u *authUsecase) UserLogin(
 		Email:     user.Email,
 		PubKey:    user.PubKey,
 		CreatedAt: user.CreatedAt,
+		Role:      user.Role,
 	}
 	err = u.sessionStorage.SetUserSession(ctx, user.ID.String(), sessUser, u.tokenManger.GetExpireTime())
 	if err != nil {
@@ -104,6 +105,9 @@ func (u *authUsecase) UserLogin(
 
 func (u *authUsecase) ValidateToken(
 	ctx context.Context, token string) (jwtLib.MapClaims, *errors.HTTPError) {
+	if token == "" {
+		return nil, constants.HTTPUnauthorized
+	}
 	mapClaims, err := u.tokenManger.GetClaims(token)
 	if err != nil {
 		return nil, constants.HTTPUnauthorized
@@ -150,6 +154,7 @@ func (u *authUsecase) GetMe(ctx context.Context, uid string) (*dto.UserResponseB
 		Fullname:  user.FullName,
 		CreatedAt: user.CreatedAt.String(),
 		PubKey:    user.PubKey,
+		Role:      user.Role,
 	}, nil
 }
 

@@ -31,7 +31,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type VirtualPrinterClient interface {
-	SubmitPrintJob(ctx context.Context, in *PrintDocument, opts ...grpc.CallOption) (*PrintJob, error)
+	SubmitPrintJob(ctx context.Context, in *PrintDocument, opts ...grpc.CallOption) (*ListPrintJobsResponse, error)
 	GetJobStatus(ctx context.Context, in *GetJobStatusRequest, opts ...grpc.CallOption) (*PrintJob, error)
 	CancelPrintJob(ctx context.Context, in *CancelJobRequest, opts ...grpc.CallOption) (*PrintJob, error)
 	MonitorPrintJob(ctx context.Context, in *GetJobStatusRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PrintJob], error)
@@ -47,9 +47,9 @@ func NewVirtualPrinterClient(cc grpc.ClientConnInterface) VirtualPrinterClient {
 	return &virtualPrinterClient{cc}
 }
 
-func (c *virtualPrinterClient) SubmitPrintJob(ctx context.Context, in *PrintDocument, opts ...grpc.CallOption) (*PrintJob, error) {
+func (c *virtualPrinterClient) SubmitPrintJob(ctx context.Context, in *PrintDocument, opts ...grpc.CallOption) (*ListPrintJobsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PrintJob)
+	out := new(ListPrintJobsResponse)
 	err := c.cc.Invoke(ctx, VirtualPrinter_SubmitPrintJob_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -120,7 +120,7 @@ func (c *virtualPrinterClient) ViewPrinterStatus(ctx context.Context, in *Empty,
 // All implementations must embed UnimplementedVirtualPrinterServer
 // for forward compatibility.
 type VirtualPrinterServer interface {
-	SubmitPrintJob(context.Context, *PrintDocument) (*PrintJob, error)
+	SubmitPrintJob(context.Context, *PrintDocument) (*ListPrintJobsResponse, error)
 	GetJobStatus(context.Context, *GetJobStatusRequest) (*PrintJob, error)
 	CancelPrintJob(context.Context, *CancelJobRequest) (*PrintJob, error)
 	MonitorPrintJob(*GetJobStatusRequest, grpc.ServerStreamingServer[PrintJob]) error
@@ -136,7 +136,7 @@ type VirtualPrinterServer interface {
 // pointer dereference when methods are called.
 type UnimplementedVirtualPrinterServer struct{}
 
-func (UnimplementedVirtualPrinterServer) SubmitPrintJob(context.Context, *PrintDocument) (*PrintJob, error) {
+func (UnimplementedVirtualPrinterServer) SubmitPrintJob(context.Context, *PrintDocument) (*ListPrintJobsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubmitPrintJob not implemented")
 }
 func (UnimplementedVirtualPrinterServer) GetJobStatus(context.Context, *GetJobStatusRequest) (*PrintJob, error) {

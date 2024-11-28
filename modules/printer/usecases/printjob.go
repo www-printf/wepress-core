@@ -9,7 +9,7 @@ import (
 	"github.com/www-printf/wepress-core/pkg/errors"
 )
 
-func (u *printerUsecase) SubmitPrintJob(ctx context.Context, req *dto.SubmitPrintJobRequestBody) (*dto.PrintJobResponseBody, *errors.HTTPError) {
+func (u *printerUsecase) SubmitPrintJob(ctx context.Context, req *dto.SubmitPrintJobRequestBody) (*dto.ListPrintJobResponseBody, *errors.HTTPError) {
 	doc, err := u.printerRepo.GetDocument(ctx, req.DocumentID)
 	if err != nil {
 		return nil, constants.HTTPNotFound
@@ -38,24 +38,31 @@ func (u *printerUsecase) SubmitPrintJob(ctx context.Context, req *dto.SubmitPrin
 		return nil, constants.HTTPInternal
 	}
 
-	history := &domains.PrintHistory{
-		JobID:     resp.GetJobId(),
-		ClusterID: req.ClusterID,
-		PrinterID: printerID,
+	for i := range len(resp.GetJobs()) {
+		history := &domains.PrintHistory{
+			JobID:     resp.Jobs[i].GetJobId(),
+			ClusterID: req.ClusterID,
+			PrinterID: printerID,
+		}
+
+		if err := u.printerRepo.AddPrintHistory(ctx, history); err != nil {
+			return nil, constants.HTTPInternal
+		}
 	}
 
-	if err := u.printerRepo.AddPrintHistory(ctx, history); err != nil {
-		return nil, constants.HTTPInternal
+	var list dto.ListPrintJobResponseBody
+	for _, job := range resp.GetJobs() {
+		list.PrintJobs = append(list.PrintJobs, dto.PrintJobResponseBody{
+			ID:            job.GetJobId(),
+			DocumentID:    job.GetDocumentId(),
+			PagesPrinted:  job.GetPagesPrinted(),
+			EstimatedTime: job.GetEtaSeconds(),
+			JobStatus:     job.GetStatus().String(),
+			TotalPages:    job.GetTotalPages(),
+		})
 	}
 
-	return &dto.PrintJobResponseBody{
-		ID:            resp.GetJobId(),
-		DocumentID:    resp.GetDocumentId(),
-		PagesPrinted:  resp.GetPagesPrinted(),
-		EstimatedTime: resp.GetEtaSeconds(),
-		JobStatus:     resp.GetStatus().String(),
-		TotalPages:    resp.GetTotalPages(),
-	}, nil
+	return &list, nil
 }
 
 func (u *printerUsecase) ViewJobStatus(ctx context.Context, jobID string) (*dto.PrintJobResponseBody, *errors.HTTPError) {
