@@ -31,10 +31,13 @@ func (m *middlewareManager) Auth() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			token, err := c.Cookie("token")
-			if err != nil || token.Value == "" {
+			if err != nil || token == nil {
 				authHeader := c.Request().Header.Get("Authorization")
 				if !strings.HasPrefix(authHeader, "Bearer ") {
 					return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+				}
+				if token == nil {
+					token = new(http.Cookie)
 				}
 				token.Value = strings.TrimPrefix(authHeader, "Bearer ")
 				if token.Value == "" {
