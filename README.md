@@ -67,7 +67,7 @@ Or watch for changes and restart automatically:
 make watch-api
 ```
 
-### Database migrartions
+### Database migrations
 
 Generate a new database migration:
 
